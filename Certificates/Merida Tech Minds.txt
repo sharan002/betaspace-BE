@@ -1,0 +1,117 @@
+Certificate 1:
+
+ACCEPTANCE LETTER
+
+/ju We are happy to inform that *[salutation] [userName]* ([reg_no]), a [year_of_study] student of *[degree], [department]*, *[college], [college_location]* has been shortlisted and accepted to complete an Internship Training programme at our organization. /ju
+
+Internship Period: *[start_date] to [end_date]*
+Domain: *[Internship]*
+
+/ju [He_She] is fully authorized to be present and participate in all training-related activities at our organization during the above period.
+
+/ju This internship is for academic and professional learning purposes only. It does not create or imply any employment relationship with our organization.
+
+Thanking You
+
+
+
+BACKGROUND - https://appintechnologycbe.s3.us-east-1.amazonaws.com/meridabg.jpeg
+
+
+
+Issued Date : *[issue_date]*
+Certificate ID : *[_id]*
+
+
+
+Certificate 2:
+
+INTERNSHIP CERTIFICATE
+
+/ju This certificate is issued to acknowledge that *[salutation] [userName]* ([reg_no]), [year_of_study] student of *[degree], [department]* from *[college], [college_location]* has concluded [his_her] Internship Training at our organization. /ju
+
+Internship Period: *[start_date] to [end_date]*
+Domain: *[Internship]*
+
+/ju [He_She] invested genuine effort in understanding and applying concepts in *[Internship]*. The internship was completed with dedication and [his_her] performance was acknowledged as Excellent throughout.
+
+
+Thanking You
+
+
+
+Issued Date : *[end_date]*
+Certificate ID : *[_id]*
+
+
+
+Certificate 3:
+
+INTERNSHIP ATTENDANCE CERTIFICATE
+
+/ju We are glad to certify that *[salutation] [userName]* ([reg_no]), [year_of_study] student of *[degree], [department]* from *[college], [college_location]* has been a part of the Internship Training programme at our organization from *[start_date]* to *[end_date]* and has fulfilled all attendance obligations. /ju
+/ju
+ Our assessment of [his_her] internship conduct is as follows:
+
+•	Ensured complete and regular attendance for the entire internship duration.
+•	Proactively contributed to tasks, activities, and knowledge-building sessions.
+•	Demonstrated clarity in understanding concepts and applying them in practice.
+•	Maintained high levels of discipline, decorum, and professionalism.
+•	Engaged respectfully and constructively with peers, staff, and assigned mentors.
+
+/ju
+/ju This certificate is presented in appreciation of [his_her] diligent participation. We wish [him_her] every success in [his_her] future endeavors. /ju
+
+
+
+
+Issued Date : *[end_date]*
+Certificate ID : *[_id]*
+
+
+Certificate 4:
+
+PLACEMENT TRAINING CERTIFICATE
+
+/ju This is to certify that *[salutation] [userName]* ([reg_no]), [year_of_study] student of *[degree], [department]* from *[college], [college_location]* has been a participant of the Industry Placement Training Programme conducted at our organization. /ju
+/ju 
+The training encompassed the following key areas:
+
+•	Business Communication and Personal Branding
+•	Effective Listening and Response Skills
+•	Creative Ideation and Adaptability Training
+•	Logical Thinking and Decision Making
+•	Collaborative Working and Team Building
+•	Ethics, Values and Workplace Professionalism
+•	Emotional Intelligence and Soft Skills
+•	Career Mapping and Interview Coaching
+
+/ju
+/ju [His_Her] commitment and behavior during the training were found to be of Excellent standard.
+Thanking You
+
+
+
+
+Issued Date : *[end_date]*
+Certificate ID : *[_id]*
+
+
+Certificate 5:
+
+WORKSHOP CERTIFICATE
+
+/ju This is to inform that *[salutation] [userName]* ([reg_no]), [year_of_study] student of *[degree], [department]* from *[college], [college_location]* participated in a Workshop conducted by our organization on *[end_date]*. /ju
+
+Topic: *[workshop]*
+
+/ju [His_Her] active participation was valued and appreciated. We look forward to [his_her] bright professional future. /ju
+
+Thanking You
+
+
+
+
+
+Issued Date : *[end_date]*
+Certificate ID : *[_id]*

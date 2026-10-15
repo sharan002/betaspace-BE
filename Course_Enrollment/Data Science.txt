@@ -1,0 +1,45 @@
+8 Hours:
+
+Certificate of Enrollment 
+
+This is to inform that *[userName]* has successfully enrolled in the *[course]*  (8 hours per day) at *Appin Technology, Coimbatore*.
+
+*Course Highlights:*
+ Python Programming – Advanced Functions, OOP, Data Structures
+ Mathematics & Statistics for Data Science – Probability, Bayesian Inference, Algebra, Calculus
+ Data Handling & Processing – NumPy, Pandas, SQL, Power BI
+ Machine Learning & Deep Learning – Regression, Classification, Clustering, Neural Networks, Transformers
+ Natural Language Processing (NLP) – Tokenization, Named Entity Recognition, Sentiment Analysis
+ GenAI & Large Language Models – LangChain, OpenAI, LLAMA
+ Real-World Projects – Sentiment Analysis, Market Prediction, Chatbots using LLMs
+
+*Advanced Training for Job-Readiness*
+This intensive 8-hour program ensures deep expertise in Data Science, AI, and Machine Learning, preparing students for high-demand data-driven careers.
+
+Thanking you
+
+BACKGROUND - https://appintechnologycbe.s3.us-east-1.amazonaws.com/appintechbg.jpeg
+
+
+2 Hours:
+
+Certificate of Enrollment 
+
+This is to inform that *[userName]* has successfully enrolled in the *[course]*  (2 hours per day) at *Appin Technology, Coimbatore*.
+
+*Course Highlights:*
+ Python for Data Science – Basics, Functions, Data Structures, Web Crawling
+ Mathematics & Statistics – Probability, Mean, Median, Mode, Regression, Correlation
+ NumPy & Pandas – Data Manipulation, Cleaning, Processing
+ Data Visualization – Matplotlib, Seaborn, Tableau
+ Microsoft Power BI – Data Modeling, Visualization, Dashboard Creation
+ Basic Machine Learning – Linear Regression, SVM Classifier, Classification Algorithms
+ Hands-on Projects & Case Studies
+
+*Industry-Oriented Training*
+This structured program provides hands-on experience in Data Science, equipping students with the essential skills required for data-driven roles.
+
+Thanking you
+
+BACKGROUND - https://appintechnologycbe.s3.us-east-1.amazonaws.com/appintechbg.jpeg
+

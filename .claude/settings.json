@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl -s -w \"\\\\nHTTP:%{http_code}\\\\n\" http://localhost:4099/external/timetable)",
+      "Bash(curl -s -w \"\\\\nHTTP:%{http_code}\\\\n\" http://localhost:4099/external/timetable -H \"x-portal-username: wrong\" -H \"x-portal-password: wrong\")",
+      "Bash(curl -s -w \"\\\\nHTTP:%{http_code}\\\\n\" http://localhost:4099/external/timetable -H \"x-portal-username: appintimetable\" -H \"x-portal-password: appin@@cbe\")",
+      "Bash(curl -s -w \"\\\\nHTTP:%{http_code}\\\\n\" http://localhost:4099/batches/timetable)",
+      "Bash(curl -s -w \"\\\\nHTTP:%{http_code}\\\\n\" http://localhost:4000/external/timetable -H \"x-portal-username: appintimetable\" -H \"x-portal-password: appin@@cbe\")"
+    ]
+  }
+}

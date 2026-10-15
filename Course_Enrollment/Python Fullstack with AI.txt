@@ -1,0 +1,41 @@
+8 Hours:
+
+Certificate of Enrollment 
+
+This is to inform that *[userName]* has successfully enrolled in the *[course]* (8 hours per day) at *Appin Technology, Coimbatore*.
+
+*Course Highlights:*
+  Frontend Development: HTML5, CSS3, JavaScript, Bootstrap, React.js
+  Backend Development: Core Python, Advanced Python, Django REST Framework
+  Database Management: PostgreSQL, MongoDB, CRUD Operations
+  AI & Machine Learning: AI-powered authentication, AI in UI/UX, Chatbots
+  Version Control & Deployment: GitHub, AWS, GCP, Heroku
+  Industry-Ready Full Stack Training: Hands-on projects integrating AI with web applications
+  
+*Advanced Training for Job-Readiness*
+This intensive 8-hour daily program ensures a deep dive into Full Stack Python development with AI integration, making students industry-ready with real-world projects.
+
+Thanking you
+
+BACKGROUND - https://appintechnologycbe.s3.us-east-1.amazonaws.com/appintechbg.jpeg
+
+
+2 Hours :
+
+Certificate of Enrollment
+
+This is to inform that *[userName]* has successfully enrolled in the *[course]* (2 hours per day) at *Appin Technology, Coimbatore*.
+
+*Course Highlights:*
+  Frontend Development: HTML5, CSS3, Bootstrap, JavaScript, jQuery
+  Backend Development: Core Python, Advanced Python, Django Framework
+  Database Management: SQL, CRUD Operations
+  Web Development Concepts: REST APIs, MVC Architecture
+  Project-Based Learning: Hands-on with Live Examples
+
+*Industry-Oriented Training*  
+This structured program is designed to equip students with essential Full-Stack Python Development skills, preparing them for real-world software projects.
+
+Thanking you
+
+BACKGROUND - https://appintechnologycbe.s3.us-east-1.amazonaws.com/appintechbg.jpeg

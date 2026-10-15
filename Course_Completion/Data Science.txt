@@ -1,0 +1,124 @@
+8 Hours:
+
+COURSE COMPLETION CERTIFICATE
+
+/ju This is to certify that *[salutation] [userName]*  has successfully completed the Job-Readiness Program in *[course]*  at  *Appin Technology*, Coimbatore, covering end-to-end development and placement-focused skill building. /ju
+
+*Duration:* 4 Months | 8 Hours per Day | Monday - Saturday /n
+
+/ju
+*Course Highlights:* /n 
+*Python Programming Foundations*: Installation of Python, environment setup, variables, data types, control structures, functions, modules, and packages./n
+*Data Structures & Data Manipulation*: Working with lists, tuples, sets, and dictionaries, along with array and data manipulation using NumPy and Pandas. /n
+*Data Visualization*: Creating statistical and exploratory data visualizations using Matplotlib and Seaborn. /n
+*Statistical Analysis*: Descriptive statistics, probability concepts, hypothesis testing, regression analysis, correlation, and ANOVA. /n
+*Data Preprocessing & Cleaning*: Handling missing values, data transformation, normalization, and feature engineering using Pandas. /n
+*Machine Learning Essentials*: Introduction to supervised and unsupervised learning, basic model building, performance evaluation, and implementation using scikit-learn. /n
+*Database Management*: Fundamentals of SQL with Python, basic CRUD operations, and integration with MongoDB. /n
+*AI & Deep Learning Introduction*: Overview of TensorFlow and Keras, neural network fundamentals, and development of simple deep learning models./n
+/ju /n
+
+We wish her the very best in her professional endeavors.
+
+Thanking you
+
+Issued Date : *[issue_date]*
+Certificate ID : *[_id]*
+
+
+
+
+BACKGROUND - https://appintechnologycbe.s3.us-east-1.amazonaws.com/appintechbg.jpeg
+
+
+2 Hours :
+
+COURSE COMPLETION CERTIFICATE
+
+/ju This is to certify that *[salutation] [userName]*  has successfully completed the Job-Readiness Program in *[course]*  at *Appin Technology*, Coimbatore, covering end-to-end development and placement-focused skill building. /ju
+
+*Duration:* 3 Months 
+
+/ju
+*Course Highlights:* /n 
+Introduction to Data Analytics /n
+Data Analytics Concepts /n
+Excel for Analytics  /n
+Data Analysis with Excel /n
+SQL Database Skills /n
+Tableau Visualization /n
+Power BI Analytics /n
+Python for Data s/n
+/ju /n
+We wish her the very best in her professional endeavors.
+Thanking you
+
+Issued Date : *[issue_date]*
+Certificate ID : *[_id]*
+
+
+
+
+BACKGROUND - https://appintechnologycbe.s3.us-east-1.amazonaws.com/appintechbg.jpeg
+
+8 Hours :
+
+PROJECT EXPERIENCE CERTIFICATE
+/ju This is to certify that *[salutation] [userName]* has successfully completed projects as part of 4 months *[course]* training program at Appin Technology, Coimbatore. 
+/ju /n
+
+*Project Title* : [project_name] /n
+*Project Work Included:* /n
+*Programming & Data Analysis:* Advanced Python, NumPy, Pandas, SQL, Statistical Analysis, Data Visualization, Feature Engineering /n
+*Machine Learning & Deep Learning:* Regression, Classification, Clustering, XGBoost, Neural Networks, TensorFlow, Keras, CNN, RNN, LSTM /n
+*Advanced AI & NLP:* Natural Language Processing, Hugging Face Transformers, Word Embeddings, Prompt Engineering, AI Fundamentals, Gemini API Integration /n
+*Forecasting & MLOps:* Time Series Analysis, ARIMA, Prophet, Model Evaluation, MLflow, Experiment Tracking /n
+*Deployment & Tools:* Scikit-learn, Flask REST API, Advanced Streamlit, Git, GitHub, AI-Powered Insight Generation, Live Application Deployment /n
+*Portfolio:* 
+/ju This advanced project experience has equipped the candidate with practical skills in end-to-end data science, deep learning, advanced NLP, time-series forecasting, AI integration, model tracking, and deployment of interactive machine learning applications. The program also includes live internship project experience. We commend the student's dedication and wish them success in their future career. /ju
+
+
+
+Thanking you
+Issued Date : *[issue_date]*
+Certificate ID : *[_id]*
+
+BACKGROUND - https://appintechnologycbe.s3.us-east-1.amazonaws.com/appintechbg.jpeg
+
+2 Hours :
+
+PROJECT EXPERIENCE CERTIFICATE
+/ju This is to certify that *[salutation] [userName]* has successfully completed projects as part of 3 months *[course]* training program at Appin Technology, Coimbatore. 
+/ju /n
+
+*Project Title* : [project_name] /n
+*Project Work Included:* /n
+*Programming:* Python Fundamentals, Jupyter Notebook, NumPy, Pandas, Data Cleaning and Preprocessing /n
+*Statistics & Data Analysis:* Probability, Descriptive Statistics, Hypothesis Testing, Exploratory Data Analysis (EDA), Matplotlib, Seaborn /n
+*Machine Learning:* Regression, Classification, Clustering, PCA, Feature Engineering, Model Evaluation, NLP Fundamentals, Sentiment Analysis /n
+*Database & Deployment:* SQL, MySQL, Scikit-learn, Streamlit, Git, GitHub, Machine Learning Model Deployment /n
+*Portfolio:* 
+/ju This hands-on project experience has equipped the candidate with practical skills in data analysis, predictive modeling, statistical interpretation, machine learning, and application deployment. We commend the student's dedication and wish them success in their future career. /ju
+
+
+
+Thanking you
+Issued Date : *[issue_date]*
+Certificate ID : *[_id]*
+
+BACKGROUND - https://appintechnologycbe.s3.us-east-1.amazonaws.com/appintechbg.jpeg
+
+Only For 8 Hours :
+
+INTERNSHIP CERTIFICATE
+/ju This is to certify that *[salutation] [userName]* has successfully completed Internship at *Ether Services*, Coimbatore as part of the *[course]* training program. /ju
+/n Duration: *4 Months* | 8 hrs per day | Monday to Saturday/n 
+/ju During the internship, the student worked on a live project titled *[intern_title]*, utilizing technologies and tools such as Excel for Data Analytics, SQL, Tableau, Power BI, and Python, applying concepts of Data Visualization, Statistical Analysis, and Predictive Insights and Machine learning ,Deep learning with AI. /ju
+
+/ju We appreciate the intern's dedication and wish them continued success in their professional journey.  /ju
+
+Thanking you
+Issued Date : *[issue_date]* 
+Certificate ID : *[_id]* 
+
+BACKGROUND - https://appintechnologycbe.s3.us-east-1.amazonaws.com/etherservicesbg.jpeg

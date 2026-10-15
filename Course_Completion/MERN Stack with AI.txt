@@ -1,0 +1,119 @@
+8 Hours:
+
+COURSE COMPLETION CERTIFICATE
+
+/ju This is to certify that *[salutation] [userName]*  has successfully completed the Job-Readiness Program in *[course]*  at  *Appin Technology*, Coimbatore, covering end-to-end development and placement-focused skill building. /ju
+
+*Duration:* 4 Months | 8 hours/day | Monday - Saturday  /n
+
+/ju
+*Course Highlights:* /n 
+*Frontend Development*: HTML5, CSS3, responsive design, Bootstrap/Tailwind, JavaScript ES6 features. /n
+*React.js Essentials*: Components, props, state, hooks, routing, API integration, Redux basics.  /n
+*Node.js & Express.js*: Event loop, middleware, RESTful APIs, MVC patterns, error handling, security headers. /n
+*Database Integration*: MongoDB & Mongoose schemas, CRUD operations, validation, indexing, performance optimization. /n
+*Authentication & Security*: JWT-based authentication, role-based access control, CORS, CSRF & XSS basics. /n
+*DevOps & Deployment*: Git/GitHub, Docker basics, CI/CD pipelines, deploying apps on AWS/Heroku. /n
+*AI Integration & Capstone Project*: Chatbots, Generative AI with OpenAI GPT APIs, and a real-world MERN application deployment. /n
+/ju /n
+
+Thanking you
+
+Issued Date : *[issue_date]*
+Certificate ID : *[_id]*
+
+
+
+
+BACKGROUND - https://appintechnologycbe.s3.us-east-1.amazonaws.com/appintechbg.jpeg
+
+
+2 Hours :
+
+COURSE COMPLETION CERTIFICATE
+
+/ju This is to certify that *[salutation] [userName]*  has successfully completed the Job-Readiness Program in *[course]*  at *Appin Technology*, Coimbatore, covering end-to-end development and placement-focused skill building. /ju
+
+*Duration:* 3 Months 
+
+/ju
+*Course Highlights:* /n 
+*Introduction to MERN*: Overview of MongoDB, Express.js, React, and Node.js. /n
+*Frontend*: HTML5, CSS3, JavaScript, and Bootstrap essentials.  /n
+*React*: Components, props, and state management basics. /n
+*Backend*: Node.js runtime and Express.js for APIs. /n
+*Database Essentials*: CRUD operations in MongoDB. /n
+*Career Pathways*: Roles like Full Stack Developer, React Developer, and Backend Engineer. /n
+/ju /n
+
+Thanking you
+
+Issued Date : *[issue_date]*
+Certificate ID : *[_id]*
+
+
+
+
+BACKGROUND - https://appintechnologycbe.s3.us-east-1.amazonaws.com/appintechbg.jpeg
+
+8 Hours :
+
+PROJECT EXPERIENCE CERTIFICATE
+/ju This is to certify that *[salutation] [userName]* has successfully completed projects as part of 4 months *[course]* training program at Appin Technology, Coimbatore. 
+The candidate actively participated in the design and development of real-world web applications, demonstrating proficiency in both frontend and backend technologies./ju /n
+
+*Project Title* : [project_name] /n
+*Project Work Included:* /n
+*Frontend:* HTML5, CSS3, JavaScript ES6+, React JS, React Hooks, React Router, Redux, Responsive Web Design /n
+*Backend:* Node.js, Express.js, Advanced Express Architecture, REST APIs, JWT Authentication, Role-Based Access Control /n
+*Database:* MongoDB, Mongoose, SQL Fundamentals, Database Integration /n
+*AI & Advanced Technologies:* Generative AI Fundamentals, Gemini API Integration, AI Chatbot Development, Smart Query Resolution, AI-Based Code & Text Generation /n
+*Tools & Deployment:* Git, GitHub, Docker, GitHub Actions, AWS Fundamentals, Vercel, Render, MongoDB Atlas /n
+*Portfolio:* 
+/ju This advanced project experience has equipped the candidate with practical skills in full-stack application development, AI integration, secure API development, containerization, CI/CD workflows, and live deployment. We commend the student's dedication and wish them success in their future career. /ju
+
+
+
+Thanking you
+Issued Date : *[issue_date]*
+Certificate ID : *[_id]*
+
+BACKGROUND - https://appintechnologycbe.s3.us-east-1.amazonaws.com/appintechbg.jpeg
+
+2 Hours :
+
+PROJECT EXPERIENCE CERTIFICATE
+/ju This is to certify that *[salutation] [userName]* has successfully completed projects as part of 4 months *[course]* training program at Appin Technology, Coimbatore. 
+The candidate actively participated in the design and development of real-world web applications, demonstrating proficiency in both frontend and backend technologies./ju /n
+
+*Project Title* : [project_name] /n
+*Project Work Included:* /n
+*Frontend:* HTML5, CSS3, Bootstrap, Tailwind CSS, JavaScript ES6+, DOM Manipulation, React JS, React Hooks, React Router, Redux /n
+*Backend:* Node.js, Express.js, REST API Development, Authentication & Authorization, JWT, Middleware /n
+*Database:* MongoDB, Mongoose, SQL Fundamentals, CRUD Operations, Database Integration /n
+*Tools & Deployment:* Git, GitHub, Postman, Render, MongoDB Atlas, Vercel /n
+*Portfolio:* 
+/ju This hands-on project experience has equipped the candidate with practical skills in developing responsive, database-driven web applications using the MERN stack, implementing secure authentication, integrating REST APIs, and deploying full-stack applications. We commend the student's dedication and wish them success in their future career. /ju
+
+
+Thanking you
+Issued Date : *[issue_date]*
+Certificate ID : *[_id]*
+
+BACKGROUND - https://appintechnologycbe.s3.us-east-1.amazonaws.com/appintechbg.jpeg
+
+Only For 8 Hours :
+
+INTERNSHIP CERTIFICATE
+/ju This is to certify that *[salutation] [userName]* has successfully completed Internship at *Ether Services*, Coimbatore as part of the *[course]* training program. /ju
+/n Duration: *3 Months* /n 
+/ju During the internship, the student worked on a live project titled *[intern_title]*, utilizing technologies such as HTML5, CSS3, JavaScript, Bootstrap, ReactJS,  Express js, Node js , MongoDB, PostgreSQL, MySQL.
+ /ju
+
+/ju The Intern demonstrated strong skills in frontend and backend development, version control, and project deployment, contributing effectively to building a fully functional web application.
+We appreciate the intern's dedication and wish them continued success in their professional journey. /ju
+Thanking you
+Issued Date : *[issue_date]* 
+Certificate ID : *[_id]* 
+
+BACKGROUND - https://appintechnologycbe.s3.us-east-1.amazonaws.com/etherservicesbg.jpeg

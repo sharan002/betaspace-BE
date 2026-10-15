@@ -1,0 +1,42 @@
+8 Hours:
+
+Certificate of Enrollment 
+
+This is to inform that *[userName]* has successfully enrolled in the *[course]* (8 hours per day) at *Appin Technology, Coimbatore*.
+
+*Course Highlights:*
+  Advanced Excel & SQL – Complex Formulas, Query Optimization, Stored Procedures, Database Design
+  Python for Analytics – NumPy, Pandas, Data Wrangling, Automation Scripting
+  Statistics & Business Analytics – Probability, Regression, Correlation, Hypothesis Testing, A/B Testing
+  Data Visualization & BI Tools – Power BI, Advanced Dashboards, DAX
+  Introduction to Machine Learning for Analytics – Predictive Analytics, Trend Forecasting
+  Real-World Projects – Sales Analytics, Customer Segmentation, Business Dashboards, KPI Reporting
+  
+*Advanced Training for Job-Readiness*
+ This intensive 8-hour program ensures deep expertise in Data Analytics and Business Intelligence, preparing students for high-demand data-driven career roles.
+
+Thanking you
+
+BACKGROUND - https://appintechnologycbe.s3.us-east-1.amazonaws.com/appintechbg.jpeg
+
+
+2 Hours :
+
+Certificate of Enrollment
+
+This is to inform that *[userName]* has successfully enrolled in the *[course]* (2 hours per day) at *Appin Technology, Coimbatore*.
+
+*Course Highlights:*
+  Microsoft Excel for Data Analytics
+  SQL for Data Analysis
+  Python for Data Analytics
+  Statistics for Data Analytics
+  Power BI 
+  AI for Data Analytics 
+
+*Industry-Oriented Training*  
+This structured program is designed to equip students with essential Full-Stack Python Development skills, preparing them for real-world software projects.
+
+Thanking you
+
+BACKGROUND - https://appintechnologycbe.s3.us-east-1.amazonaws.com/appintechbg.jpeg

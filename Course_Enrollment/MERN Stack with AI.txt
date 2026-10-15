@@ -1,0 +1,42 @@
+8 Hours:
+
+Certificate of Enrollment 
+
+This is to inform that *[userName]* has successfully enrolled in the *[course]* (8 hours per day) at *Appin Technology, Coimbatore*.
+
+*Course Highlights:*
+ Frontend Development – HTML5, CSS3, Bootstrap, JavaScript, React.js, Redux
+ Backend Development – Node.js, Express.js, REST API Development, Authentication
+ Database Management – MongoDB, Mongoose, Schema Design, Aggregations
+ State Management & Advanced Concepts – Redux, Context API, Hooks
+ Web Security & Authentication – Passport.js, JWT, Session Handling
+ Full-Stack Project Development – MVC Architecture, Real-World Applications
+ Hands-on Projects – Complete End-to-End MERN Stack Application
+
+*Advanced Training for Job-Readiness*
+This intensive 8-hour daily program ensures deep expertise in MERN Stack Development, equipping students with the skills required for modern web development careers.
+
+Thanking you
+
+BACKGROUND - https://appintechnologycbe.s3.us-east-1.amazonaws.com/appintechbg.jpeg
+
+
+2 Hours :
+
+Certificate of Enrollment
+
+This is to inform that *[userName]* has successfully enrolled in the *[course]* (2 hours per day) at *Appin Technology, Coimbatore*.
+
+*Course Highlights:*
+ Frontend Development – HTML5, CSS3, Bootstrap, JavaScript, jQuery, React.js
+ Backend Development – Node.js, Express.js, MVC Architecture
+ Database Management – MongoDB, CRUD Operations
+ REST API Development – Fetch API, Axios, HTTP Requests
+ Project-Based Learning – Hands-on with Real-World Applications
+
+*Industry-Oriented Training*
+This structured program equips students with full-stack web development skills using the MERN stack, preparing them for real-world software development projects.
+
+Thanking you
+
+BACKGROUND - https://appintechnologycbe.s3.us-east-1.amazonaws.com/appintechbg.jpeg

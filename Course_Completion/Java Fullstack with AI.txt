@@ -1,0 +1,117 @@
+8 Hours:
+
+COURSE COMPLETION CERTIFICATE
+
+/ju This is to certify that *[salutation] [userName]*  has successfully completed the Job-Readiness Program in *[course]*  at  *Appin Technology*, Coimbatore, covering end-to-end development and placement-focused skill building. /ju
+
+*Duration:* 4 Months | 8 Hours per Day | Monday - Saturday /n
+
+/ju
+*Course Highlights:* /n
+*Frontend Development*: HTML5, CSS3, JavaScript, Bootstrap,JQuery Responsive Web Design /n
+*Core Java*: OOP Concepts, Exception Handling, Collections, Multithreading, JDBC /n
+*Frameworks*: Spring, Spring Boot, RESTful Web Services /n
+*Database Management*: MySQL, JDBC Connectivity, CRUD Operations, Query Optimization /n
+*Version Control & Deployment*: Git, GitHub,  Postman /n
+*Full Stack Integration*: Connecting Frontend with Java Backend and MySQL Database /n
+*Capstone Projects & Industry Readiness*: Real-world Full Stack Java Applications /n
+/ju /n
+
+Thanking you
+
+Issued Date : *[issue_date]*
+Certificate ID : *[_id]*
+
+
+
+
+BACKGROUND - https://appintechnologycbe.s3.us-east-1.amazonaws.com/appintechbg.jpeg
+
+
+2 Hours :
+
+COURSE COMPLETION CERTIFICATE
+
+/ju This is to certify that *[salutation] [userName]*  has successfully completed the Job-Readiness Program in *[course]*  at *Appin Technology*, Coimbatore, covering end-to-end development and placement-focused skill building. /ju
+
+*Duration:* 3 Months
+
+/ju
+*Course Highlights:* /n
+*Frontend Development*: HTML5, CSS3, JavaScript, Bootstrap /n
+*Core Java*: OOPs, Exception Handling, Multi-threading, File Handling /n
+*Backend Development*: Java Servlets, JSP, Spring Boot Basics, REST APIs /n
+*Database Management*: MySQL, MongoDB, Hibernate ORM /n
+*Project-Based Learning*: Full Stack Project (Java + Spring Boot + React.js) /n
+
+/ju /n
+
+Issued Date : *[issue_date]*
+Certificate ID : *[_id]*
+
+Thanking you
+
+
+BACKGROUND - https://appintechnologycbe.s3.us-east-1.amazonaws.com/appintechbg.jpeg
+
+8 Hours :
+
+PROJECT EXPERIENCE CERTIFICATE
+/ju This is to certify that *[salutation] [userName]* has successfully completed projects as part of 4 months *[course]* training program at Appin Technology, Coimbatore.
+The candidate actively participated in the design and development of real-world web applications, demonstrating proficiency in both frontend and backend technologies./ju /n
+
+*Project Title* : [project_name] /n
+*Project Work Included:* /n
+*Frontend*: HTML5, CSS3, Bootstrap 5, JavaScript, React JS /n
+*Backend*: Core Java, OOP, Collections, Spring Boot, Spring Security /n
+*Database & API*: MySQL/PostgreSQL, Spring Data JPA, Hibernate, REST API, JWT Authentication /n
+*AI Integration*: AI Fundamentals, Machine Learning Concepts, Prompt Engineering, Gemini API, AI Chatbot, Smart Search /n
+*Tools & Deployment*: Git, GitHub, JUnit, Mockito, Railway, Vercel /n
+*Portfolio :*
+/ju This hands-on project experience has equipped the candidate with practical skills in full-stack application development, AI integration, API development, testing, and live deployment. We commend the student's dedication and wish them success in their future career /ju 
+
+
+Thanking you
+Issued Date : *[issue_date]*
+Certificate ID : *[_id]*
+
+BACKGROUND - https://appintechnologycbe.s3.us-east-1.amazonaws.com/appintechbg.jpeg
+
+2 Hours :
+
+PROJECT EXPERIENCE CERTIFICATE
+/ju This is to certify that *[salutation] [userName]* has successfully completed projects as part of 3 months *[course]* training program at Appin Technology, Coimbatore. /ju
+/ju The candidate actively participated in the design and development of real-world web applications, demonstrating proficiency in both frontend and backend technologies. /ju /n
+*Project Title* : [project_name] /n
+*Project Work Included:* /n
+*Frontend:* HTML5, CSS3, Bootstrap 5, JavaScript, DOM, Events, Fetch API /n
+*Backend:* Core Java, OOP, Collections, Spring Boot, Spring MVC /n
+*Database:* MySQL, SQL, JDBC, Spring Data JPA, Hibernate /n
+*API & Tools:* REST API, JSON, Git, GitHub /n
+*Portfolio* : 
+/ju This hands-on project experience has equipped the candidate with practical skills in frontend and backend development, database integration, and REST API implementation. We commend the student's dedication and wish them success in their future career. /ju
+
+
+Thanking you
+Issued Date : *[issue_date]*
+Certificate ID : *[_id]*
+
+BACKGROUND - https://appintechnologycbe.s3.us-east-1.amazonaws.com/appintechbg.jpeg
+
+Only For 8 Hours :
+
+INTERNSHIP CERTIFICATE
+/ju This is to certify that *[salutation] [userName]* has successfully completed Internship at *Ether Services*, Coimbatore as part of the *[course]* training program. /ju
+/n Duration: *4 Months* /n
+/ju During the internship, the student worked on a live project titled *[intern_title]*, utilizing technologies such as HTML, CSS, JavaScript, React [VITE] and backend development using Java, Nodejs, Spring Boot, Hibernate, and database management using MySQL, API testing using Postman, and version control using Git and GitHub. /ju
+
+/ju The Intern demonstrated strong skills in frontend and backend development, version control, and project deployment, contributing effectively to building a fully functional web application.
+
+We appreciate the intern's dedication and wish them continued success in their professional journey. /ju
+
+Thanking you
+Issued Date : *[issue_date]*
+Certificate ID : *[_id]*
+
+BACKGROUND - https://appintechnologycbe.s3.us-east-1.amazonaws.com/etherservicesbg.jpeg
+

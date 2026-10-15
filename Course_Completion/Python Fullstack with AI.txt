@@ -1,0 +1,112 @@
+8 Hours:
+
+COURSE COMPLETION CERTIFICATE
+
+/ju This is to certify that *[salutation] [userName]*  has successfully completed the Job-Readiness Program in *[course]*  at  *Appin Technology*, Coimbatore, covering end-to-end development and placement-focused skill building. /ju
+
+*Duration:* 4 Months | 8 Hours per Day | Monday - Saturday /n
+
+/ju
+*Course Highlights:* /n 
+*Frontend Development*: HTML5, CSS3, JavaScript, Bootstrap,JQuery Responsive Web Design /n
+*Backend Development*: Python, Django,  PostgreSQL /n
+*Database Management*: MySQL, MongoDB /n
+*Version Control & Tools*: Git, GitHub /n
+*Full Stack Integration*: Connecting Frontend Interfaces with Python Backend and Databases /n
+*Capstone Projects & Industry Readiness:* Real-world Full Stack Python Applications with End-to-End Implementation. /n
+/ju /n
+
+Thanking you
+
+Issued Date : *[issue_date]*
+Certificate ID : *[_id]*
+
+
+
+
+BACKGROUND - https://appintechnologycbe.s3.us-east-1.amazonaws.com/appintechbg.jpeg
+
+
+2 Hours :
+
+COURSE COMPLETION CERTIFICATE
+
+/ju This is to certify that *[salutation] [userName]*  has successfully completed the Job-Readiness Program in *[course]*  at *Appin Technology*, Coimbatore, covering end-to-end development and placement-focused skill building. /ju
+
+*Duration:* 3 Months 
+
+/ju
+*Course Highlights:* /n 
+*Frontend Development*: HTML5, CSS3, JavaScript, Bootstrap,JQuery Responsive Web Design /n
+*Backend Development*: Python, Django,  PostgreSQL /n
+*Database Management*: MySQL /n
+*Version Control & Tools*: Git, GitHub /n
+*Full Stack Integration*: Connecting Frontend Interfaces with Python Backend and Databases /n
+*Capstone Projects & Industry Readiness:* Real-world Full Stack Python Applications with End-to-End Implementation. /n
+/ju /n
+
+Issued Date : *[issue_date]*
+Certificate ID : *[_id]*
+
+Thanking you
+
+
+BACKGROUND - https://appintechnologycbe.s3.us-east-1.amazonaws.com/appintechbg.jpeg
+
+8 Hours :
+
+PROJECT EXPERIENCE CERTIFICATE
+/ju This is to certify that *[salutation] [userName]* has successfully completed projects as part of 4 months *[course]* training program at Appin Technology, Coimbatore. 
+The candidate actively participated in the design and development of real-world web applications, demonstrating proficiency in both frontend and backend technologies./ju /n
+
+*Project Title* : [project_name] /n
+*Project Work Included:* /n
+*Frontend* : HTML5 + CSS3, Bootstrap 5, JavaScript — DOM, Events, Fetch API /n
+*Backend* : Python Fundamentals, OOP, MySQL, Django, Git /n
+*AI* : Supervised Learning, Unsupervised Learning, Reinforcement Learning,Prompt Engineering /n
+*Portfolio :* 
+/ju This hands-on project experience has equipped the candidate with the practical skills required to work on live full stack development projects.
+We commend the student's dedication and wish them success in their future career. /ju
+
+
+Thanking you
+Issued Date : *[issue_date]*
+Certificate ID : *[_id]*
+
+BACKGROUND - https://appintechnologycbe.s3.us-east-1.amazonaws.com/appintechbg.jpeg
+
+2 Hours :
+
+PROJECT EXPERIENCE CERTIFICATE
+/ju This is to certify that *[salutation] [userName]* has successfully completed projects as part of 4 months *[course]* training program at Appin Technology, Coimbatore. /ju
+/ju The candidate actively participated in the design and development of real-world web applications, demonstrating proficiency in both frontend and backend technologies. /ju /n
+*Project Title* : [project_name] /n 
+*Project Work Included:* /n 
+*Frontend* : HTML5 + CSS3, Bootstrap 5 , JavaScript — DOM, Events, Fetch API /n 
+*Backend* : Python Fundamentals, OOP, MySQL, Django , Git /n
+*Portfolio* : 
+/ju This hands-on project experience has equipped the candidate with the practical skills required to work on live full stack development projects.
+We commend the student's dedication and wish them success in their future career. /ju
+
+
+Thanking you
+Issued Date : *[issue_date]*
+Certificate ID : *[_id]*
+
+BACKGROUND - https://appintechnologycbe.s3.us-east-1.amazonaws.com/appintechbg.jpeg
+
+Only For 8 Hours :
+
+INTERNSHIP CERTIFICATE
+/ju This is to certify that *[salutation] [userName]* has successfully completed Internship at *Ether Services*, Coimbatore as part of the *[course]* training program. /ju
+/n Duration: *4 Months* /n 
+/ju During the internship, the student worked on a live project titled *[intern_title]*, utilizing technologies such as HTML5, CSS3, JavaScript, Bootstrap, ReactJS, Django, PostgreSQL, MySQL, API. /ju
+
+/ju The Intern demonstrated strong skills in frontend and backend development, version control, and project deployment, contributing effectively to building a fully functional web application.
+We appreciate the intern's dedication and wish them continued success in their professional journey. /ju
+Thanking you
+Issued Date : *[issue_date]* 
+Certificate ID : *[_id]* 
+
+BACKGROUND - https://appintechnologycbe.s3.us-east-1.amazonaws.com/etherservicesbg.jpeg
+

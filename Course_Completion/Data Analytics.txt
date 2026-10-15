@@ -1,0 +1,122 @@
+8 Hours:
+
+COURSE COMPLETION CERTIFICATE
+
+/ju This is to certify that *[salutation] [userName]*  has successfully completed the Job-Readiness Program in *[course]*  at  *Appin Technology*, Coimbatore, covering end-to-end development and placement-focused skill building. /ju
+
+*Duration:* 4 Months | 8 Hours per Day | Monday - Saturday /n
+
+/ju
+*Course Highlights:* /n 
+*Advanced Excel & SQL* Complex Formulas, Query Optimization, Stored Procedures, Database Design /n
+*Python for Analytics* NumPy, Pandas, Data Wrangling, Automation Scripting /n
+*Statistics & Business Analytics* Probability, Regression, Correlation, Hypothesis Testing, A/B Testing /n
+*Data Visualization & BI Tools* Power BI, Advanced Dashboards, DAX /n
+*Data Warehousing & ETL* Data Pipelines, Data Modeling, Star Schema /n
+*Introduction to ML for Analytics* – Predictive Analytics, Trend Forecasting /n
+/ju /n
+
+Thanking you
+
+Issued Date : *[issue_date]*
+Certificate ID : *[_id]*
+
+
+
+
+BACKGROUND - https://appintechnologycbe.s3.us-east-1.amazonaws.com/appintechbg.jpeg
+
+
+2 Hours :
+
+COURSE COMPLETION CERTIFICATE
+
+/ju This is to certify that *[salutation] [userName]*  has successfully completed the Job-Readiness Program in *[course]*  at *Appin Technology*, Coimbatore, covering end-to-end development and placement-focused skill building. /ju
+
+*Duration:* 3 Months 
+
+/ju
+*Course Highlights:* /n 
+*Advanced Excel & SQL* Complex Formulas, Query Optimization, Stored Procedures, Database Design /n
+*Python for Analytics* NumPy, Pandas, Data Wrangling, Automation Scripting /n
+*Statistics & Business Analytics* Probability, Regression, Correlation, Hypothesis Testing, A/B Testing /n
+*Data Visualization & BI Tools* Power BI, Advanced Dashboards, DAX /n
+*Data Warehousing & ETL* Data Pipelines, Data Modeling, Star Schema /n
+*Introduction to ML for Analytics* – Predictive Analytics, Trend Forecasting /n
+/ju /n
+
+Issued Date : *[issue_date]*
+Certificate ID : *[_id]*
+
+Thanking you
+
+
+BACKGROUND - https://appintechnologycbe.s3.us-east-1.amazonaws.com/appintechbg.jpeg
+
+8 Hours :
+
+PROJECT EXPERIENCE CERTIFICATE
+/ju This is to certify that *[salutation] [userName]* has successfully completed projects as part of 4 months *[course]* training program at Appin Technology, Coimbatore. 
+The candidate actively participated in the design and development of real-world web applications, demonstrating proficiency in both frontend and backend technologies./ju /n
+
+*Project Title* : [project_name] /n
+*Project Work Included:* /n
+/ju
+*Data Preparation & Programming:* Advanced Excel, Python Fundamentals, Pandas, NumPy, Data Cleaning, Data Transformation, Data Integration /n
+*Database & Querying:* SQL, MySQL, Joins, Subqueries, Common Table Expressions (CTEs), Window Functions, Query Optimization /n
+*Business Intelligence:* Power BI, Data Modeling, DAX, Power Query, Interactive Dashboards, KPI Monitoring, Business Performance Reporting /n
+*Advanced Analytics:* Exploratory Data Analysis (EDA), Statistical Analysis, Trend Analysis, Data Interpretation, Forecasting Fundamentals /n
+*Project & Reporting:* End-to-End Analytics Project, Automated Reporting, Business Insights, Data Visualization, Git, GitHub /n
+/ju
+*Portfolio :* 
+/ju This hands-on project experience has equipped the candidate with practical skills in data cleaning, 
+SQL-based data analysis, business reporting, dashboard creation, and identifying actionable insights from datasets. 
+We commend the student's dedication and wish them success in their future career.. /ju
+
+
+Thanking you
+Issued Date : *[issue_date]*
+Certificate ID : *[_id]*
+
+BACKGROUND - https://appintechnologycbe.s3.us-east-1.amazonaws.com/appintechbg.jpeg
+
+2 Hours :
+
+PROJECT EXPERIENCE CERTIFICATE
+/ju This is to certify that *[salutation] [userName]* has successfully completed projects as part of 3 months *[course]* training program at Appin Technology, Coimbatore. /ju
+/ju The candidate actively participated in the design and development of real-world web applications, demonstrating proficiency in both frontend and backend technologies. /ju /n
+*Project Title* : [project_name] /n 
+*Project Work Included:* /n 
+Data Preparation:* Microsoft Excel, Data Cleaning, Data Formatting, Data Validation, Data Organization /n
+*Data Analysis:* Excel Formulas, Pivot Tables, Lookup Functions, Descriptive Statistics, Trend Analysis, Key Performance Indicators (KPIs) /n
+*Database:* SQL, MySQL, Data Retrieval, Filtering, Sorting, Joins, Aggregate Functions /n
+*Data Visualization:* Charts, Graphs, Interactive Dashboards, Business Reporting, Data-Driven Insights /n
+*Portfolio* : 
+/ju This hands-on project experience has equipped the candidate with practical skills 
+in data cleaning, SQL-based data analysis, business reporting, dashboard creation, and identifying actionable insights from datasets. We commend 
+the student's dedication and wish them success in their future career. /ju
+
+
+Thanking you
+Issued Date : *[issue_date]*
+Certificate ID : *[_id]*
+
+BACKGROUND - https://appintechnologycbe.s3.us-east-1.amazonaws.com/appintechbg.jpeg
+
+Only For 8 Hours :
+
+INTERNSHIP CERTIFICATE
+/ju This is to certify that *[salutation] [userName]* has successfully completed Internship at *Ether Services*, Coimbatore as part of the *[course]* training program. /ju
+/n Duration: *4 Months* /n 
+/ju During the internship, the student worked on a live project titled *[intern_title]*, Utilizing technologies and tools such as Microsoft Excel, SQL, Python, Power BI, Tableau, Statistics, Data Visualization, Data Cleaning, Data Analysis, and Machine Learning. /ju
+
+/ju The Intern demonstrated strong skills in data collection, data cleaning, data analysis, data visualization, and reporting, contributing effectively to deriving meaningful insights and developing interactive dashboards for real-world business scenarios.
+
+We appreciate the intern's dedication and wish them continued success in their professional journey. /ju
+
+Thanking you
+Issued Date : *[issue_date]* 
+Certificate ID : *[_id]* 
+
+BACKGROUND - https://appintechnologycbe.s3.us-east-1.amazonaws.com/etherservicesbg.jpeg
+

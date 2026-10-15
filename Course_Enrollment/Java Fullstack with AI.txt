@@ -1,0 +1,41 @@
+8 Hours:
+
+Certificate of Enrollment 
+
+This is to inform that *[userName]* has successfully enrolled in the *Java Fullstack with AI* (8 hours per day) at *Appin Technology, Coimbatore*.
+
+*Course Highlights:*
+ Core Java & Object-Oriented Programming (OOPs): Classes, Objects, Inheritance, Polymorphism, Encapsulation, Abstraction
+ Advanced Java: Multi-threading, File Handling, Exception Handling, Collection Framework
+ Java Web Development: Servlets, JSP, JDBC, Hibernate ORM
+ Spring Framework: Spring Boot, Spring MVC, Microservices Architecture
+ Frontend Development: HTML5, CSS3, JavaScript, Bootstrap, React.js
+ Database Management: MySQL,
+ Capstone Projects & Industry Readiness: Real-world full-stack Java projects, Resume Building, LinkedIn Optimization
+
+*Advanced Training for Job-Readiness*
+This intensive 8-hour daily program ensures deep expertise in FULL STACK JAVA DEVELOPMENT with AI making students industry-ready with real-world projects.
+
+Thanking you
+
+BACKGROUND - https://appintechnologycbe.s3.us-east-1.amazonaws.com/appintechbg.jpeg
+
+2 Hours :
+
+Certificate of Enrollment 
+
+This is to inform that *[userName]* has successfully enrolled in the *[course]* (2 hours per day) at *Appin Technology, Coimbatore*.
+
+*Course Highlights:*
+ Frontend Development: HTML5, CSS3, JavaScript, Bootstrap
+ Core Java: OOPs, Exception Handling, Multi-threading, File Handling
+ Backend Development: Java Servlets, JSP, Spring Boot Basics, REST APIs
+ Database Management: MySQL, MongoDB, Hibernate ORM
+ Project-Based Learning: Full Stack Project (Java + Spring Boot + React.js)
+ 
+*Industry-Oriented Training*
+This course is designed to provide hands-on experience in Full Stack Java Development with real-world projects.
+
+Thanking you
+
+BACKGROUND - https://appintechnologycbe.s3.us-east-1.amazonaws.com/appintechbg.jpeg
