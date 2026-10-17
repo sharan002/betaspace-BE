@@ -175,7 +175,7 @@ io.on('connection', (socket) => {
 });
 // ────────────────────────────────────────────────────────────────────────────
 
-const PORT = process.env.PORT || 8001;
+const PORT = process.env.PORT || 8002;
 mongoose.set('strictQuery', false);
 mongoose.connect(process.env.MONGO_URI, {
   useNewUrlParser: true,
