@@ -242,7 +242,7 @@ function filterManagerReviewCounsellors(userDocs) {
 
 // Mirrors index.js's TERMINAL_PIPELINES (the auto-reassignment cron's definition of
 // "no longer active") so the Director Review aggregates agree with the rest of the CRM.
-const MC_TERMINAL_PIPELINES = [/^enrolled$/i, /^looking for job$/i, /^not interested$/i, /^not intrested$/i];
+const MC_TERMINAL_PIPELINES = [/^on hold$/i, /^(enrolled|converted)$/i, /^looking for job$/i, /^not interested$/i, /^not intrested$/i];
 function isTerminalPipeline(stage) {
   return MC_TERMINAL_PIPELINES.some(re => re.test(String(stage || "New")));
 }
@@ -305,15 +305,15 @@ async function getNewLeadsSummary(start, end) {
 async function getNotConvertedLeads(start, end) {
   const leads = await Chat.find({
     datecreated: { $gte: start, $lte: end },
-    pipeline: { $not: /^enrolled$/i },
+    pipeline: { $not: /^(enrolled|converted)$/i },
   }).select("userName course pipeline assignedto").lean();
 
   const byStage = {};
   for (const l of leads) {
-    const stage = l.pipeline || "New";
+    const stage = l.pipeline || "New Lead";
     byStage[stage] = (byStage[stage] || 0) + 1;
   }
-  const sample = leads.slice(0, 20).map(l => `${l.userName} (${l.course || "N/A"}, stage: ${l.pipeline || "New"}, with ${l.assignedto || "unassigned"})`);
+  const sample = leads.slice(0, 20).map(l => `${l.userName} (${l.course || "N/A"}, stage: ${l.pipeline || "New Lead"}, with ${l.assignedto || "unassigned"})`);
   return { total: leads.length, byStage, sample };
 }
 
@@ -323,11 +323,11 @@ async function getPipelineChangesSummary(start, end) {
   for (const c of changes) {
     const who = c.assignedto || "Unassigned";
     byCounsellor[who] = (byCounsellor[who] || 0) + 1;
-    const key = `${c.fromStage || "New"} -> ${c.toStage}`;
+    const key = `${c.fromStage || "New Lead"} -> ${c.toStage}`;
     transitions[key] = (transitions[key] || 0) + 1;
   }
   const sample = changes.slice(0, 25).map(c =>
-    `${c.userName || "Lead"}: ${c.fromStage || "New"} -> ${c.toStage} (by ${c.assignedto || "unassigned"}, ${new Date(c.changedAt).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", timeZone: "Asia/Kolkata" })})`
+    `${c.userName || "Lead"}: ${c.fromStage || "New Lead"} -> ${c.toStage} (by ${c.assignedto || "unassigned"}, ${new Date(c.changedAt).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", timeZone: "Asia/Kolkata" })})`
   );
   return { total: changes.length, byCounsellor, transitions, sample };
 }
@@ -369,7 +369,7 @@ async function getCounsellorActivitySummary(start, end) {
         { $count: "n" },
       ]),
       Chat.countDocuments({ assignedto: c.username, datecreated: { $gte: start, $lte: end } }),
-      Chat.countDocuments({ assignedto: c.username, pipeline: /^enrolled$/i, lastInteracted: { $gte: start, $lte: end } }),
+      Chat.countDocuments({ assignedto: c.username, pipeline: /^(enrolled|converted)$/i, lastInteracted: { $gte: start, $lte: end } }),
     ]);
     results.push({
       username: c.username,
@@ -392,7 +392,7 @@ async function getCoursePerformanceSummary(monthsBack = 3) {
     { $group: {
       _id: { $ifNull: ["$course", "Unspecified"] },
       totalLeads: { $sum: 1 },
-      enrolled: { $sum: { $cond: [{ $regexMatch: { input: { $ifNull: ["$pipeline", ""] }, regex: /^enrolled$/i } }, 1, 0] } },
+      enrolled: { $sum: { $cond: [{ $regexMatch: { input: { $ifNull: ["$pipeline", ""] }, regex: /^(enrolled|converted)$/i } }, 1, 0] } },
       revenue: { $sum: { $sum: { $map: { input: { $ifNull: ["$fees.installments", []] }, as: "i", in: { $cond: [{ $eq: ["$$i.status", "Paid"] }, { $ifNull: ["$$i.amount", 0] }, 0] } } } } },
     } },
     { $sort: { totalLeads: -1 } },
@@ -485,7 +485,7 @@ async function computeMonthlyReportRows(start, end) {
       isNewLeadInMonth: {
         $and: [
           { $gte: ["$datecreated", start] }, { $lte: ["$datecreated", end] },
-          { $or: [{ $ne: ["$course", "College Internship"] }, { $ne: ["$pipeline", "Enrolled"] }] },
+          { $or: [{ $ne: ["$course", "College Internship"] }, { $not: [{ $in: ["$pipeline", ["Converted", "Enrolled"]] }] }] },
         ],
       },
       monthRemarks: { $filter: { input: { $ifNull: ["$remarks", []] }, as: "r", cond: { $and: [{ $gte: ["$$r.timestamp", start] }, { $lte: ["$$r.timestamp", end] }] } } },
@@ -580,7 +580,7 @@ async function getConversionByCounsellor(start, end) {
     { $match: { assignedto: { $nin: [null, ""] } } },
     { $project: {
       assignedto: 1,
-      isEnrolled: { $regexMatch: { input: { $ifNull: ["$pipeline", ""] }, regex: /^enrolled$/i } },
+      isEnrolled: { $regexMatch: { input: { $ifNull: ["$pipeline", ""] }, regex: /^(enrolled|converted)$/i } },
       createdInPeriod: { $and: [{ $gte: ["$datecreated", start] }, { $lte: ["$datecreated", end] }] },
     } },
     { $group: {
@@ -641,12 +641,12 @@ async function getStaleLeadBuckets() {
 
 // Section 2/8: demo scheduling funnel. "Scheduled"/"completed" are read off the
 // PipelineChange audit log (real data); "no-show" has no CRM field, so it is a
-// labeled proxy — currently at "Demo Scheduled" with no activity in 3+ days.
+// labeled proxy — currently at "Site Visit" with no activity in 3+ days.
 async function getDemoFunnelSummary(start, end) {
   const [scheduledChanges, completedChanges, currentlyScheduled] = await Promise.all([
-    PipelineChange.countDocuments({ changedAt: { $gte: start, $lte: end }, toStage: /^demo scheduled$/i }),
-    PipelineChange.countDocuments({ changedAt: { $gte: start, $lte: end }, fromStage: /^demo scheduled$/i }),
-    Chat.find({ pipeline: /^demo scheduled$/i }).select("userName course assignedto lastInteracted remarks").lean(),
+    PipelineChange.countDocuments({ changedAt: { $gte: start, $lte: end }, toStage: /^(site visit|demo scheduled)$/i }),
+    PipelineChange.countDocuments({ changedAt: { $gte: start, $lte: end }, fromStage: /^(site visit|demo scheduled)$/i }),
+    Chat.find({ pipeline: /^(site visit|demo scheduled)$/i }).select("userName course assignedto lastInteracted remarks").lean(),
   ]);
   const cutoff = Date.now() - 3 * 864e5;
   const noShowProxy = currentlyScheduled.filter(l => {
@@ -668,7 +668,7 @@ async function getHotLeadsBranchWide() {
   }).select("userName course assignedto status pipeline remarks conversations").lean();
   return leads.map(l => ({
     userName: l.userName, course: l.course || "N/A", assignedto: l.assignedto || "unassigned",
-    status: l.status, pipeline: l.pipeline || "New",
+    status: l.status, pipeline: l.pipeline || "New Lead",
     lastRemark: lastRemarkText(l), lastConvo: lastConvoSnippet(l),
   }));
 }
@@ -678,7 +678,7 @@ async function getHotLeadsBranchWide() {
 // this only counts real Enrolled leads against it, grouped by batch_date cohort.
 async function getCourseSeatFillStatus(courseName, seatsPerBatch) {
   const rows = await Chat.aggregate([
-    { $match: { course: courseName, pipeline: /^enrolled$/i } },
+    { $match: { course: courseName, pipeline: /^(enrolled|converted)$/i } },
     { $group: { _id: { $ifNull: ["$batch_date", "Unscheduled"] }, count: { $sum: 1 } } },
     { $sort: { _id: 1 } },
   ]);
@@ -699,7 +699,7 @@ async function getUpcomingBatchFillSummary() {
     { $group: {
       _id: { course: { $ifNull: ["$course", "Unspecified"] }, batchDate: "$batch_date" },
       total: { $sum: 1 },
-      enrolled: { $sum: { $cond: [{ $regexMatch: { input: { $ifNull: ["$pipeline", ""] }, regex: /^enrolled$/i } }, 1, 0] } },
+      enrolled: { $sum: { $cond: [{ $regexMatch: { input: { $ifNull: ["$pipeline", ""] }, regex: /^(enrolled|converted)$/i } }, 1, 0] } },
     } },
   ]);
   const now = Date.now();
@@ -862,7 +862,7 @@ function buildLeadsText(label, start, end, d) {
 }
 
 function buildNotConvertedText(label, start, end, d) {
-  let t = `[LEADS NOT YET CONVERTED — created ${label} (${fmtRange(start, end)}), still not Enrolled as of now]\nTotal: ${d.total}\n`;
+  let t = `[LEADS NOT YET CONVERTED — created ${label} (${fmtRange(start, end)}), still not Converted as of now]\nTotal: ${d.total}\n`;
   const stages = Object.entries(d.byStage).sort((a, b) => b[1] - a[1]);
   if (stages.length) t += `By current stage:\n${stages.map(([s, n]) => `- ${s}: ${n}`).join("\n")}\n`;
   if (d.sample.length) t += `Sample leads:\n${d.sample.map(s => `- ${s}`).join("\n")}`;
@@ -966,7 +966,7 @@ function buildTargetGapText(d) {
 function buildConversionByCounsellorText(label, rows) {
   const total = rows.reduce((s, r) => s + (r.conversions || 0), 0);
   let t = `[CONVERSIONS BY COUNSELLOR — ${label}]\n`;
-  t += `A "conversion" = a lead now at "Enrolled", counted by the month the lead was CREATED.\n`;
+  t += `A "conversion" = a lead now at "Converted", counted by the month the lead was CREATED.\n`;
   t += `>>> TOTAL conversions ${label}: ${total} <<<\n\n`;
   t += rows.map(r => `- ${r._id}: ${r.conversions} conversions from ${r.newLeads} new leads (${r.newLeads ? Math.round((r.conversions / r.newLeads) * 100) : 0}% conversion rate)`).join("\n");
   return t;
@@ -1009,8 +1009,8 @@ function buildStaleLeadBucketsText(d) {
 }
 
 function buildDemoFunnelText(label, d) {
-  let t = `[DEMO FUNNEL — ${label}]\nScheduled (entered "Demo Scheduled" stage): ${d.scheduled}\nCompleted (moved on from "Demo Scheduled"): ${d.completed}\nCurrently sitting at "Demo Scheduled": ${d.currentlyAtDemoStage}\n`;
-  t += `NOTE: there is no explicit no-show field in the CRM. "No-show (proxy)" below = leads still at Demo Scheduled with NO activity in 3+ days — treat as an approximate signal, not a confirmed no-show count.\n`;
+  let t = `[SITE VISIT FUNNEL — ${label}]\nScheduled (entered "Site Visit" stage): ${d.scheduled}\nCompleted (moved on from "Site Visit"): ${d.completed}\nCurrently sitting at "Site Visit": ${d.currentlyAtDemoStage}\n`;
+  t += `NOTE: there is no explicit no-show field in the CRM. "No-show (proxy)" below = leads still at Site Visit with NO activity in 3+ days — treat as an approximate signal, not a confirmed no-show count.\n`;
   t += `No-show (proxy): ${d.noShowProxy.length}`;
   if (d.noShowProxy.length) t += ` — ${d.noShowProxy.map(l => `${l.userName} (${l.course}, ${l.assignedto})`).join("; ")}`;
   return t;
@@ -1085,7 +1085,7 @@ function buildBranchWeeklyScorecardText(s) {
   t += `New leads (all sources): ${s.leadsThisWeek} (last week ${s.leadsLastWeek})\n`;
   t += `Lead-to-enrollment conversion rate this week: ${pctOrNA(s.conversionRatePctThisWeek)}\n`;
   t += `Leads untouched > 48 hrs right now: ${s.untouched48hPlus}\n`;
-  t += `Demo/counselling show rate this week: ${pctOrNA(s.demoShowRatePct)} (${s.demoFunnel.scheduled} scheduled, ${s.demoFunnel.noShowProxy.length} no-show proxy — see note on demo tracking)\n`;
+  t += `Site-visit show rate this week: ${pctOrNA(s.demoShowRatePct)} (${s.demoFunnel.scheduled} scheduled, ${s.demoFunnel.noShowProxy.length} no-show proxy — see note on demo tracking)\n`;
   t += `${JGP_COURSE_NAME} seats filled: ${s.jgpSeatsFilled} of ${s.jgpSeatsPerBatch} (configured capacity, not a CRM field)\n`;
   t += `Counsellors at/above 7/10 rating (last 7 days): ${s.counsellorsAbove7}\n`;
   t += `Counsellors below 4/10 rating (last 7 days): ${s.counsellorsBelow4}\n\n`;
@@ -1116,7 +1116,7 @@ function buildLeadTimelineText(lead, pcRows) {
     if (i && i.dueDate) evts.push({ t: new Date(i.dueDate), s: `INSTALLMENT #${i.number || "?"} ${inr(i.amount)} — ${i.status || "Pending"}${i.paidAt ? ` (paid ${fmtDate(i.paidAt)})` : ""}` });
   }
   for (const p of (pcRows || [])) {
-    if (p && p.changedAt) evts.push({ t: new Date(p.changedAt), s: `PIPELINE ${p.fromStage || "New"} → ${p.toStage}` });
+    if (p && p.changedAt) evts.push({ t: new Date(p.changedAt), s: `PIPELINE ${p.fromStage || "New Lead"} → ${p.toStage}` });
   }
   evts.sort((a, b) => a.t - b.t);
   let lines = evts.filter(e => !isNaN(e.t)).map(e => `${fmtDate(e.t)}: ${e.s}`);
@@ -1125,7 +1125,7 @@ function buildLeadTimelineText(lead, pcRows) {
     `[LEAD — ${lead.userName || "Unknown"}]\n` +
     `Course: ${lead.course || lead.courseofintrest || "N/A"} | Source: ${lead.leadfrom || "N/A"}` +
     `${lead.referredBy ? ` (referred by ${lead.referredBy})` : ""}${lead.leadgenId ? ` | Meta paid lead` : ""}\n` +
-    `Counsellor: ${lead.assignedto || "unassigned"} | Current stage: ${lead.pipeline || "New"} | Status: ${lead.status || "Cold"}\n` +
+    `Counsellor: ${lead.assignedto || "unassigned"} | Current stage: ${lead.pipeline || "New Lead"} | Status: ${lead.status || "Cold"}\n` +
     `Created: ${fmtDate(lead.datecreated)} | Last interacted: ${lead.lastInteracted ? fmtDate(lead.lastInteracted) : "N/A"}` +
     `${lead.reminder ? ` | Next reminder: ${fmtDate(lead.reminder)}` : ""}\n` +
     `Timeline (oldest → newest):\n`;
@@ -1395,7 +1395,7 @@ async function classifyQuery(message, counsellorNames = []) {
 }
 
 // Conversion / enrolment numbers for one course (or all courses) in a period.
-// "Conversion" = pipeline is now "Enrolled". Reported two ways: cohort basis
+// "Conversion" = pipeline is now "Converted". Reported two ways: cohort basis
 // (by the month the lead was created — matches the CRM dashboard) and
 // billed-in-period basis (by fees.billedAt — "enrolled during this month").
 async function getConversionSummary(course, start, end) {
@@ -1405,7 +1405,7 @@ async function getConversionSummary(course, start, end) {
   const rows = await Chat.aggregate([
     { $match: match },
     { $project: {
-      isEnrolled: { $regexMatch: { input: { $ifNull: ["$pipeline", ""] }, regex: /^enrolled$/i } },
+      isEnrolled: { $regexMatch: { input: { $ifNull: ["$pipeline", ""] }, regex: /^(enrolled|converted)$/i } },
       pipeline: { $ifNull: ["$pipeline", "New"] },
       createdInPeriod: { $and: [{ $gte: ["$datecreated", start] }, { $lte: ["$datecreated", end] }] },
       billedInPeriod: { $and: [
@@ -1436,7 +1436,7 @@ async function getConversionByCourse(start, end) {
     { $match: { course: { $nin: [null, ""], $not: /^college internship$/i } } },
     { $project: {
       course: 1,
-      isEnrolled: { $regexMatch: { input: { $ifNull: ["$pipeline", ""] }, regex: /^enrolled$/i } },
+      isEnrolled: { $regexMatch: { input: { $ifNull: ["$pipeline", ""] }, regex: /^(enrolled|converted)$/i } },
       createdInPeriod: { $and: [{ $gte: ["$datecreated", start] }, { $lte: ["$datecreated", end] }] },
     } },
     { $group: {
@@ -1452,7 +1452,7 @@ async function getConversionByCourse(start, end) {
 function buildConversionByCourseText(label, rows) {
   const total = rows.reduce((s, r) => s + (r.conversions || 0), 0);
   let t = `[CONVERSIONS BY COURSE — ${label}]\n`;
-  t += `A "conversion" = a lead now at "Enrolled", counted by the month the lead was CREATED (matches the CRM dashboard). College Internship is excluded.\n`;
+  t += `A "conversion" = a lead now at "Converted", counted by the month the lead was CREATED (matches the CRM dashboard). College Internship is excluded.\n`;
   t += `>>> TOTAL conversions ${label}: ${total} <<<\n\n`;
   t += rows.map(r => `- ${r._id}: ${r.conversions} conversions from ${r.newLeads} new leads (${r.newLeads ? Math.round((r.conversions / r.newLeads) * 100) : 0}%)`).join("\n");
   return t;
@@ -1463,7 +1463,7 @@ function buildConversionText(courseLabel, periods) {
   const tm = periods[0].data;
   let t = `[CONVERSIONS — ${courseLabel}]\n`;
   t += `>>> ${courseLabel} conversions THIS MONTH (${periods[0].label}): ${tm.cohortEnrolled} <<<\n`;
-  t += `(A "conversion" = a lead now at pipeline stage "Enrolled", counted by the month the lead was CREATED — this matches the CRM dashboard. Do NOT add periods together; each line is a standalone total for that one period.)\n`;
+  t += `(A "conversion" = a lead now at pipeline stage "Converted", counted by the month the lead was CREATED — this matches the CRM dashboard. Do NOT add periods together; each line is a standalone total for that one period.)\n`;
   for (const p of periods) {
     const d = p.data;
     const pct = d.newLeads ? Math.round((d.cohortEnrolled / d.newLeads) * 100) : 0;
@@ -2245,7 +2245,7 @@ async function computeCommitmentFollowThrough(username, commitments, dayStart, d
       (lead.remarks || []).some(r => r.timestamp && new Date(r.timestamp) >= dayStart && new Date(r.timestamp) <= dayEnd) ||
       (lead.lastInteracted && new Date(lead.lastInteracted) >= dayStart && new Date(lead.lastInteracted) <= dayEnd)
     );
-    const enrolled = !!lead && /^enrolled$/i.test(lead.pipeline || "");
+    const enrolled = !!lead && /^(enrolled|converted)$/i.test(lead.pipeline || "");
     const isKept = touchedToday || enrolled;
     if (isKept) kept++;
     details.push({
@@ -2342,29 +2342,22 @@ function buildScorecardText(scorecard) {
   return lines.join("\n");
 }
 
+// Defaults are deliberately generic — set MANAGER_COURSE_KNOWLEDGE / MANAGER_COMPETITOR_PLAYBOOK /
+// MANAGER_MARKET_TRENDS in .env with verified BetaSpace pricing and facts. Never invent figures here.
 const DEFAULT_COURSE_KNOWLEDGE = [
-  "Full Stack Python with AI: 4 months; Rs.29,899 two-hour track / Rs.59,899 eight-hour track; Python Developer, Full Stack Developer, ML Engineer roles; project and internship on intensive track.",
-  "Full Stack Java with AI: 3 months; Rs.29,899 two-hour track / Rs.59,899 eight-hour track; backend/full-stack roles; project, internship, and Oracle Java encouragement.",
-  "Data Analytics with AI: 4 months; Rs.29,899 two-hour track / Rs.45,000 eight-hour track; Data Analyst, BI Analyst, Reporting Analyst roles.",
-  "Digital Marketing with AI: 3 months; EMI and early-bird discount positioning; Google Ads, HubSpot, Meta Blueprint-aligned, ISO 9001:2015.",
-  "Generative AI: flexible tracks; Rs.14,899 two-hour track; AI Developer, Prompt Engineer, GenAI Engineer. Do not claim job guarantee for this course.",
-  "MERN AI Job Guarantee Program: 2 months full-time; Rs.99,899; EMI; entrance test plus interview; written offer letter before training starts; pay begins month 3; limited seats.",
-  "Standing claims: 15+ years, ISO 9001:2015, 500+ placement clients, 50+ active hiring partners, 20,000+ students trained, 100% interviews assured, small batches, 70/30 practical/theory, 3+ live projects, free 1-month internship.",
+  "BetaSpace (https://betaspace.in) offers flexible co-working workspaces: hot desks, dedicated desks, private cabins, team offices, meeting rooms and virtual offices.",
+  "Do not quote prices, availability, discounts or lease terms unless they appear in the CRM data or the configured knowledge base. Availability is always confirmed by the BetaSpace team.",
 ].join("\n");
 
 const DEFAULT_COMPETITOR_PLAYBOOK = [
-  "If a lead compares competitors, ask which competitor and what they offered.",
-  "Appin publishes course pricing; many competitors hide fees behind lead forms. Position this as transparent pricing, not a weakness.",
-  "Against generic job-assured claims, lead with the written offer-letter mechanic in the MERN job-guarantee program.",
-  "Against vague placement support, cite transparent pricing, EMI, ISO certification, named local placement clients, and specific interview assurance.",
+  "If a lead compares other co-working spaces or traditional offices, ask which one and what they were offered (price, location, lock-in, amenities).",
+  "Position flexibility (no long lease lock-in), ready infrastructure and lower setup cost versus a traditional office — only where these are true for the plan being discussed.",
+  "Push for a site visit: leads who see the space convert far better than leads who only get a quote.",
 ].join("\n");
 
 const DEFAULT_MARKET_TRENDS = [
-  "AI/ML entry-level India: roughly Rs.6-12 LPA; strong AI skill gap.",
-  "Data Analytics: roughly Rs.5-10 LPA; beginner-friendly entry into data careers.",
-  "Full-stack development: roughly Rs.4-9 LPA; broad hiring base and fast first-job path.",
-  "Cloud/DevOps and Cybersecurity remain shortage areas; Digital Marketing and Analytics fit non-technical backgrounds.",
-  "Use these only as coaching context for price/timing hesitation; do not recite them as a script.",
+  "Startups, freelancers and remote teams increasingly prefer flexible, short-commitment workspace over a traditional lease.",
+  "Use this only as coaching context for price/timing hesitation; do not recite it as a script.",
 ].join("\n");
 
 function getManagerKnowledgeBase() {
@@ -2378,7 +2371,7 @@ function getManagerKnowledgeBase() {
 async function computeCounsellorDailyMetrics(username, dayStart, dayEnd) {
   const activeLeads = await Chat.find({
     assignedto: username,
-    pipeline: { $not: { $regex: /^enrolled$/i } }
+    pipeline: { $not: { $regex: /^(enrolled|converted)$/i } }
   }).select("userName course status pipeline remarks conversations reminder lastInteracted datecreated leadfrom leadgenId respondedAfterFollowUp").lean();
 
   const monthStart = new Date(dayStart.getFullYear(), dayStart.getMonth(), 1, 0, 0, 0, 0);
@@ -2474,14 +2467,14 @@ async function computeCounsellorDailyMetrics(username, dayStart, dayEnd) {
     .map(l => ({
       userName: l.userName,
       course: l.course || "N/A",
-      pipeline: l.pipeline || "New",
+      pipeline: l.pipeline || "New Lead",
       status: l.status,
       lastRemark: lastRemarkText(l),
       lastConvo: lastConvoSnippet(l)
     }));
 
   const demoScheduled = activeLeads
-    .filter(l => /^demo scheduled$/i.test(l.pipeline || ""))
+    .filter(l => /^(site visit|demo scheduled)$/i.test(l.pipeline || ""))
     .slice(0, 5)
     .map(l => ({
       userName: l.userName,
@@ -2509,7 +2502,7 @@ async function computeCounsellorDailyMetrics(username, dayStart, dayEnd) {
 
   const enrolledToday = await Chat.countDocuments({
     assignedto: username,
-    pipeline: { $regex: /^enrolled$/i },
+    pipeline: { $regex: /^(enrolled|converted)$/i },
     lastInteracted: { $gte: dayStart, $lte: dayEnd }
   });
 
@@ -2623,7 +2616,7 @@ async function buildCheckinRagContext(username) {
 
   const fmtLead = (l) => {
     const r = lastRemarkText(l);
-    return `${l.userName} (${l.course || "N/A"}, stage "${l.pipeline || "New"}", ${l.status || "Cold"}) — ${l._daysStale}d since last touch${r ? `; last remark: "${String(r).slice(0, 120)}"` : "; no remarks ever"}`;
+    return `${l.userName} (${l.course || "N/A"}, stage "${l.pipeline || "New Lead"}", ${l.status || "Cold"}) — ${l._daysStale}d since last touch${r ? `; last remark: "${String(r).slice(0, 120)}"` : "; no remarks ever"}`;
   };
 
   const stale = leads
@@ -2710,7 +2703,7 @@ function buildManagerSystemPrompt(username, metrics, questionCount, extras = {})
   const historicalContext = extras.historicalContext || "";
   const openFollowUps = extras.openFollowUps || [];
 
-  return `You are the daily Review Meeting agent for Appin Technology Coimbatore's admissions/counselling team. Act like a hands-on branch manager running a short 5 PM coaching huddle with counsellor "${username}". Your job is to increase enrollments by reviewing CRM facts, catching gaps, and giving specific next actions.
+  return `You are the daily Review Meeting agent for BetaSpace's co-working sales team. Act like a hands-on branch manager running a short 5 PM coaching huddle with sales executive "${username}". Your job is to increase workspace bookings by reviewing CRM facts, catching gaps, and giving specific next actions.
 It is currently around 5 PM IST (early evening) — greet accordingly (e.g. "Hi" or "Good evening"). Never say "Good morning" or "Good afternoon".
 
 Today's numbers for ${username}:
@@ -2719,7 +2712,7 @@ Today's numbers for ${username}:
 ${newLeadsUntouchedList ? `  Untouched new leads — ask specifically why these haven't been contacted yet: ${newLeadsUntouchedList}` : ""}
 - Leads that got a remark logged today: ${metrics.remarksAddedToday}
 - Reminders/follow-ups due today: ${metrics.remindersDueToday} (handled: ${metrics.remindersHandledToday}, missed: ${metrics.remindersMissedToday})
-- Enrolled today: ${metrics.enrolledToday}
+- Converted today: ${metrics.enrolledToday}
 
 Last-3-days follow-up continuity:
 - Leads NOT followed up continuously over the last 3 days: ${fc.laggingCount}
@@ -2730,10 +2723,10 @@ Last-2-days pipeline movement:
 - Leads with NO remark logged in the last 2 days: ${metrics.pipelineStagnantCount}
 ${stagnantList ? `  Ask specifically why each hasn't moved forward — check whether the remark shown is old before accepting "I already followed up":\n${stagnantList}` : "  (none — everything active has an update in the last 2 days)"}
 
-Demo Scheduled leads — ask how the demo went and whether they followed up afterwards:
-${demoList || "  (none currently at Demo Scheduled stage)"}
+Site Visit leads — ask how the site visit went and whether they followed up afterwards:
+${demoList || "  (none currently at Site Visit stage)"}
 
-Hot/Warm leads still not enrolled: ${metrics.hotNotEnrolledCount}
+Hot/Warm leads still not converted: ${metrics.hotNotEnrolledCount}
 ${hotList || "  (none)"}
 
 Today's leads needing special attention:
@@ -2776,14 +2769,14 @@ Your job:
 - After every counsellor answer, do three checks before the next question: (1) does it contradict the CRM data above, (2) is it vague, and (3) is there a specific next action with owner and deadline? If it contradicts CRM data, name the mismatch. If it is vague, ask for the lead name/number/figure. If there is no next action, get one before moving topics.
 - Do not state that the counsellor confirmed/reported/said anything unless they actually typed it in this chat.
 - Sound like a real human manager on WhatsApp — natural, varied phrasing, reacting to what they actually say. Do NOT read a fixed checklist or repeat yourself. Short, direct questions (under ~50 words), ONE at a time, with genuine follow-ups when an answer is vague, evasive, or doesn't add up.
-- Cover today's activity: new leads received and whether the untouched ones have been contacted (ask by name), remarks/follow-ups skipped, why stagnant-pipeline leads haven't moved, how Demo Scheduled demos went, and what's delaying each named likely-to-convert lead with a follow-up gap.
+- Cover today's activity: new leads received and whether the untouched ones have been contacted (ask by name), remarks/follow-ups skipped, why stagnant-pipeline leads haven't moved, how Site Visit demos went, and what's delaying each named likely-to-convert lead with a follow-up gap.
 - Dig into the LEAD HISTORY above: ask why specific old leads haven't moved in weeks, why last week's leads got no action, and why named Hot/Warm leads still haven't converted after months — cite the actual remark/stage/age. Don't accept "I'll check" — get the real reason.
 - Ask about progress toward this month's target and % achieved; if low, name specific leads to prioritize.
 - For any paid Meta ad lead or lead that responded to a follow-up today, point out why it matters and press for their follow-up plan.
 - If they claim "no leads" or "nothing to report" while leads ARE assigned, press for the real reason and state it plainly in your summary. Push back firmly (but professionally, never insulting) on excuses like admin/office work — lead follow-up is priority #1.
 - If they mention offering a discount, check whether they cleared the specific discount with the manager.
 - This is a thorough review: you have asked ${questionCount} questions so far. You MUST ask at least ${MANAGER_MIN_QUESTIONS} and at most ${MANAGER_MAX_QUESTIONS} questions in total. ${questionCount < MANAGER_MIN_QUESTIONS ? `You are still below the minimum of ${MANAGER_MIN_QUESTIONS} — do NOT wrap up and do NOT output a VERDICT; keep asking the next question.` : `You may conclude only once every area below is covered.`}
-- Spread the questions across ALL of these areas, one at a time, and go to the next area once the current one is answered concretely: (1) yesterday's commitments, (2) new leads received today and whether each untouched one was contacted, (3) calls/WhatsApps made today and connect rate, (4) remarks and follow-ups skipped or overdue, (5) stagnant-pipeline leads and the blocker for each, (6) Demo Scheduled leads and demo outcomes, (7) Hot/Warm likely-to-convert leads, one by one by name, (8) old leads from the history above, (9) paid Meta ad leads and leads that replied today, (10) objections heard today (price, timing, trust, competitor) and how they handled them, (11) discounts offered, (12) month target, % achieved and the plan to close the gap, (13) tomorrow's plan with named leads and deadlines, (14) any help or support they need from the manager.
+- Spread the questions across ALL of these areas, one at a time, and go to the next area once the current one is answered concretely: (1) yesterday's commitments, (2) new leads received today and whether each untouched one was contacted, (3) calls/WhatsApps made today and connect rate, (4) remarks and follow-ups skipped or overdue, (5) stagnant-pipeline leads and the blocker for each, (6) Site Visit leads and demo outcomes, (7) Hot/Warm likely-to-convert leads, one by one by name, (8) old leads from the history above, (9) paid Meta ad leads and leads that replied today, (10) objections heard today (price, timing, trust, competitor) and how they handled them, (11) discounts offered, (12) month target, % achieved and the plan to close the gap, (13) tomorrow's plan with named leads and deadlines, (14) any help or support they need from the manager.
 - Do not repeat a question already answered. If an area has nothing to ask about, move on, but still reach the minimum by digging deeper into named leads and following up on vague answers.
 - When you have asked at least ${MANAGER_MIN_QUESTIONS} questions and covered the areas above (never beyond ${MANAGER_MAX_QUESTIONS}), end your FINAL message with a new line in EXACTLY this internal control format:
 VERDICT: SATISFACTORY - <one-line reason>
@@ -2894,7 +2887,7 @@ ${transcript || "(no conversation took place)"}
 
 Write a thorough report (max 450 words, plain text for WhatsApp) covering EVERY topic that came up in the transcript — do not skip, drop, or silently summarize away any question/answer pair, even minor ones:
 1. What the counsellor worked on today (based on their answers)
-2. Pipeline updates: which leads are stuck and why, which Demo Scheduled leads came up and their outcome/follow-up status
+2. Pipeline updates: which leads are stuck and why, which Site Visit leads came up and their outcome/follow-up status
 3. This month's target achievement % and what they said about it (and any leads they were pointed toward for closing the gap)
 4. If they claimed to have "no leads" or "nothing to report" at any point, state PLAINLY the reason they gave for that — never omit this
 5. What could have been done better

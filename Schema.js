@@ -137,7 +137,7 @@ const chatSchema = new mongoose.Schema({
   profession: { type: String },
   location: { type: String },
   status: { type: String, default: "Cold" },
-  pipeline: { type: String, default: "New" },
+  pipeline: { type: String, default: "New Lead" },
   remarks: [remarksSchema],
   reminder: { type: Date, default: null },
   batchId: { type: String, default: null },
@@ -366,7 +366,7 @@ chatSchema.post("findOneAndUpdate", async function (doc) {
       userName: doc.userName,
       userNumber: doc.userNumber,
       assignedto: (update?.$set?.assignedto ?? update?.assignedto) || doc.assignedto || null,
-      fromStage: oldPipeline || "New",
+      fromStage: oldPipeline || "New Lead",
       toStage: newPipeline,
     });
   } catch (err) {
@@ -660,7 +660,7 @@ const managerCheckInSchema = new mongoose.Schema({
 });
 managerCheckInSchema.index({ counsellorUsername: 1, date: 1 }, { unique: true });
 
-// Audit trail of Chat.pipeline stage transitions (New -> Demo Scheduled -> ...).
+// Audit trail of Chat.pipeline stage transitions (New Lead -> Site Visit -> ...).
 // There's no other record of *when* a lead's stage changed, only its current
 // value, so the manager RAG chatbot's "pipeline changes today" answers depend
 // on this. Populated by the chatSchema findOneAndUpdate hooks below.
@@ -669,7 +669,7 @@ const pipelineChangeSchema = new mongoose.Schema({
   userName: { type: String, default: null },
   userNumber: { type: String, default: null },
   assignedto: { type: String, default: null },
-  fromStage: { type: String, default: "New" },
+  fromStage: { type: String, default: "New Lead" },
   toStage: { type: String, required: true },
   changedAt: { type: Date, default: Date.now },
 });

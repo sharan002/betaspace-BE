@@ -17,6 +17,7 @@ const { generateCourseCertificate } = require("./CourseCertificateGenerator");
 const { generateCourseCompletionCertificates, generateCombinedCourseCompletionCertificate } = require("./CourseCompletionCertificateGenerator");
 const { generateIdCard } = require("./IdCardGenerator");
 const { sendLeadCapiEvent } = require("./metaConversions");
+const { CONVERTED_STAGES, CONVERTED_RE, META_CAPI_STAGES } = require("./pipelineStages");
 const { isWithinOfficeHours, businessMinutesBetween, offHoursMinutesBetween } = require("./businessHours");
 const multer = require('multer');
 const idCardPhotoUpload = multer({
@@ -57,17 +58,17 @@ async function analyzeRemarkStatus(chat) {
       messages: [
         {
           role: "system",
-          content: `You are a CRM lead-scoring assistant for an educational institution.
-Classify the lead's enrollment likelihood based on counselor remarks.
+          content: `You are a CRM lead-scoring assistant for BetaSpace, a co-working space provider.
+Classify the lead's likelihood of booking a workspace based on sales executive remarks.
 Reply with ONLY one word: Hot, Warm, or Cold.
-Hot  — strong interest, asking about fees/dates/joining/demo, ready to decide soon.
+Hot  — strong interest, asking about pricing/availability/move-in date/site visit, ready to decide soon.
 Warm — some interest but hesitant, needs follow-up, still evaluating.
 Cold — not interested, unresponsive, postponing indefinitely, or negative signals.`
         },
         {
           role: "user",
           content: `Lead: ${chat.userName || "Unknown"}
-Course Interest: ${chat.courseofintrest || chat.course || "Not specified"}
+Workspace Interest: ${chat.courseofintrest || chat.course || "Not specified"}
 Recent Counselor Remarks:\n${recentRemarks}
 
 Classify this lead:`
@@ -777,7 +778,7 @@ function buildLeadMatch({ view, searchQuery, filters, scope, ignoreStatusFilter 
     // already scoped to the HR pipeline stage itself (the HR user's own queue),
     // otherwise the two filters contradict each other and match nothing.
     if (!isHrScoped) {
-      and.push({ pipeline: { $nin: ["Enrolled", "Looking for job", /^not interested$/i, /^not intrested$/i] } });
+      and.push({ pipeline: { $nin: [...CONVERTED_STAGES, "Looking for job", /^not interested$/i, /^not intrested$/i] } });
     }
   } else if (viewKey === "transferred") {
     // Leads the auto-reassignment crons (no-remark / stale-pipeline) moved from
@@ -786,10 +787,10 @@ function buildLeadMatch({ view, searchQuery, filters, scope, ignoreStatusFilter 
     // the Not Interested view instead — not here.
     and.push({ "autoReassignHistory.0": { $exists: true } });
     and.push({ pipeline: { $nin: [/^not interested$/i, /^not intrested$/i] } });
-  } else if (viewKey === "enrolled" || viewKey === "fees") {
-    and.push({ pipeline: "Enrolled" });
+  } else if (viewKey === "enrolled" || viewKey === "converted" || viewKey === "fees") {
+    and.push({ pipeline: { $in: CONVERTED_STAGES } });
   } else if (viewKey === "internship-enrolled") {
-    and.push({ pipeline: "Enrolled" });
+    and.push({ pipeline: { $in: CONVERTED_STAGES } });
     and.push({ course: { $regex: /^college internship$/i } });
   } else if (viewKey === "not-interested") {
     and.push({ pipeline: { $in: [/^not interested$/i, /^not intrested$/i] } });
@@ -832,7 +833,8 @@ function buildLeadMatch({ view, searchQuery, filters, scope, ignoreStatusFilter 
     and.push({ status: { $in: f.statuses.map(s => new RegExp(`^${escapeRegex(s)}$`, "i")) } });
   }
   if (Array.isArray(f.pipelines) && f.pipelines.length > 0) {
-    and.push({ pipeline: { $in: f.pipelines.map(p => new RegExp(`^${escapeRegex(p)}$`, "i")) } });
+    // "Converted" also matches legacy "Enrolled" leads.
+    and.push({ pipeline: { $in: f.pipelines.map(p => CONVERTED_RE.test(p) ? CONVERTED_RE : new RegExp(`^${escapeRegex(p)}$`, "i")) } });
   }
   if (Array.isArray(f.assignedUsers) && f.assignedUsers.length > 0) {
     and.push({ assignedto: { $in: f.assignedUsers } });
@@ -1658,7 +1660,7 @@ app.post("/leads/:id/summarize-conversation", auth, async (req, res) => {
         messages: [
           {
             role: "system",
-            content: "You are a CRM assistant for an educational institution. Summarize a lead's WhatsApp bot conversation for a sales counsellor. Be concise and factual, plain text only."
+            content: "You are a CRM assistant for BetaSpace, a co-working space provider. Summarize a lead's WhatsApp bot conversation for a sales executive. Be concise and factual, plain text only."
           },
           {
             role: "user",
@@ -2309,7 +2311,7 @@ app.put("/Users/edit", auth, async (req, res) => {
     }
 
     // 5️⃣ Trigger Meta Conversions API for Leads when pipeline changed to Pre-Enrollment or Enrolled
-    const metaCapiStages = { "Pre-Enrollment": "Qualified Lead", "Enrolled": "Converted Lead" };
+    const metaCapiStages = META_CAPI_STAGES;
     if (pipeline && metaCapiStages[pipeline] && oldPipeline !== pipeline) {
       const capiEventName = metaCapiStages[pipeline];
       try {
@@ -2362,7 +2364,7 @@ app.post("/add", async (req, res) => {
       profession: profession || null,
       programType: programType || null,
       status: status || "Cold",
-      pipeline: pipeline || "New",
+      pipeline: pipeline || "New Lead",
       lastInteracted: new Date(),
       leadfrom: leadfrom || "Walkin",
        assignedto: assignedto || undefined,
@@ -2427,7 +2429,7 @@ app.post("/external/referral", async (req, res) => {
       conversations: [],
       course: course || null,
       status: "Cold",
-      pipeline: "New",
+      pipeline: "New Lead",
       leadfrom: "Referral",
       referredBy: referrer.userName || "Unknown",
       referralCode,
@@ -2523,7 +2525,7 @@ app.post("/external/referral/bulk", async (req, res) => {
         conversations: [],
         course: entry.course || course || null,
         status: "Cold",
-        pipeline: "New",
+        pipeline: "New Lead",
         leadfrom: "Referral",
         referredBy: referrerName,
         referralCode,
@@ -2699,10 +2701,10 @@ app.post("/leads/:id/send-to-meta", auth, async (req, res) => {
     const lead = await Chat.findById(req.params.id);
     if (!lead) return res.status(404).json({ success: false, message: "Lead not found" });
 
-    const metaCapiStages = { "Pre-Enrollment": "Qualified Lead", "Enrolled": "Converted Lead" };
+    const metaCapiStages = META_CAPI_STAGES;
     const capiEventName = metaCapiStages[lead.pipeline];
     if (!capiEventName) {
-      return res.status(400).json({ success: false, message: "Lead must be in the Pre-Enrollment or Enrolled stage to send this event.", lead });
+      return res.status(400).json({ success: false, message: "Lead must be in the Site Visit or Converted stage to send this event.", lead });
     }
 
     const result = await sendLeadCapiEvent(lead, capiEventName);
@@ -3112,7 +3114,7 @@ app.get("/reports/monthly-activity", auth, async (req, res) => {
               {
                 $or: [
                   { $ne: ["$course", "College Internship"] },
-                  { $ne: ["$pipeline", "Enrolled"] }
+                  { $not: [{ $in: ["$pipeline", CONVERTED_STAGES] }] }
                 ]
               }
             ]
@@ -3262,7 +3264,7 @@ app.get("/reports/monthly-pipeline-by-source", async (req, res) => {
     const end = new Date(year, month, 0, 23, 59, 59, 999);
 
     const matchStage = {
-      pipeline: "Enrolled",
+      pipeline: { $in: CONVERTED_STAGES },
       course: { $ne: "College Internship" },
       datecreated: { $gte: start, $lte: end },
       ...(assignedto ? { assignedto } : {})
@@ -3297,7 +3299,7 @@ app.get("/reports/monthly-pipeline-by-course", async (req, res) => {
     const end = new Date(year, month, 0, 23, 59, 59, 999);
 
     const matchStage = {
-      pipeline: "Enrolled",
+      pipeline: { $in: CONVERTED_STAGES },
       course: { $ne: "College Internship" },
       datecreated: { $gte: start, $lte: end },
       ...(assignedto ? { assignedto } : {})
@@ -3333,7 +3335,7 @@ app.get("/reports/monthly-pipeline-qualified-vs-responded", async (req, res) => 
     const end = new Date(year, month, 0, 23, 59, 59, 999);
 
     const matchStage = {
-      pipeline: "Enrolled",
+      pipeline: { $in: CONVERTED_STAGES },
       course: { $ne: "College Internship" },
       datecreated: { $gte: start, $lte: end },
       ...(assignedto ? { assignedto } : {})
@@ -3477,7 +3479,7 @@ async function computeMinminiData(weekStart, weekEnd, matchFilter) {
 
   const nonInternshipLeads = leads.filter(l => !/^college internship$/i.test(l.course || ""));
   const activeLeads = nonInternshipLeads.length;
-  const enrolledAfterWA = nonInternshipLeads.filter(l => /^enrolled$/i.test(l.pipeline || "")).length;
+  const enrolledAfterWA = nonInternshipLeads.filter(l => CONVERTED_RE.test(l.pipeline || "")).length;
   const avgMessagesPerLead = Math.round(totalMessages / leads.length);
   const avgDurationMins = leadsWithDuration > 0 ? Math.round(totalDurationMins / leadsWithDuration) : 0;
 
@@ -3498,7 +3500,7 @@ async function computeMinminiData(weekStart, weekEnd, matchFilter) {
 
   let aiSummary = "AI analysis unavailable.";
   try {
-    const prompt = `You are a WhatsApp engagement analyst for an educational CRM. Analyze the WhatsApp bot conversation data from this week and provide a comprehensive, data-driven summary.
+    const prompt = `You are a WhatsApp engagement analyst for BetaSpace, a co-working space CRM. Analyze the WhatsApp bot conversation data from this week and provide a comprehensive, data-driven summary.
 
 Week: ${weekLabel}
 New Leads with WhatsApp Activity: ${activeLeads}
@@ -3522,7 +3524,7 @@ Write a rich WhatsApp engagement analysis (max 300 words) covering:
 1. Engagement health and conversion — is the WA channel converting well? What does the ${conversionRate}% conversion rate tell us?
 2. Follow-up effectiveness — is the ${followUpResponsePct}% follow-up response rate good or poor? What does it suggest?
 3. Course demand patterns — which courses dominate, which show strong buying intent, any unexpected trends?
-4. Peak hour behavior — what does the organic engagement timing reveal about lead persona (students vs. working professionals, etc.)?
+4. Peak hour behavior — what does the organic engagement timing reveal about lead persona (freelancers vs. startups vs. corporate teams, etc.)?
 5. Conversation quality — based on the sample queries, are leads asking price/feature/placement questions or just casually exploring?
 6. Two specific, actionable recommendations to improve either WhatsApp conversion or follow-up response rates
 
@@ -3531,7 +3533,7 @@ Be data-driven, reference the actual numbers, and avoid generic advice.`;
     const completion = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       messages: [
-        { role: "system", content: "You are a WhatsApp engagement analyst for an educational CRM. Be concise, data-driven, and specific." },
+        { role: "system", content: "You are a WhatsApp engagement analyst for BetaSpace, a co-working space CRM. Be concise, data-driven, and specific." },
         { role: "user", content: prompt }
       ],
       max_tokens: 600
@@ -3684,7 +3686,7 @@ async function computeMonthlyMinminiData(monthStart, monthEnd, matchFilter) {
   }
 
   const activeLeads = leads.length;
-  const enrolledAfterWA = leads.filter(l => /^enrolled$/i.test(l.pipeline || "")).length;
+  const enrolledAfterWA = leads.filter(l => CONVERTED_RE.test(l.pipeline || "")).length;
   const avgMessagesPerLead = Math.round(totalMessages / activeLeads);
   const avgDurationMins = leadsWithDuration > 0 ? Math.round(totalDurationMins / leadsWithDuration) : 0;
 
@@ -3705,7 +3707,7 @@ async function computeMonthlyMinminiData(monthStart, monthEnd, matchFilter) {
 
   let aiSummary = "AI analysis unavailable.";
   try {
-    const prompt = `You are a WhatsApp engagement analyst for an educational CRM. Analyze the WhatsApp bot conversation data from this month and provide a comprehensive, data-driven summary.
+    const prompt = `You are a WhatsApp engagement analyst for BetaSpace, a co-working space CRM. Analyze the WhatsApp bot conversation data from this month and provide a comprehensive, data-driven summary.
 
 Month: ${monthLabel}
 New Leads with WhatsApp Activity: ${activeLeads}
@@ -3729,7 +3731,7 @@ Write a rich WhatsApp engagement analysis (max 300 words) covering:
 1. Engagement health and conversion — is the WA channel converting well? What does the ${conversionRate}% conversion rate tell us for the month?
 2. Follow-up effectiveness — is the ${followUpResponsePct}% follow-up response rate good or poor? What does it suggest?
 3. Course demand patterns — which courses dominate, which show strong buying intent, any unexpected trends?
-4. Peak hour behavior — what does the organic engagement timing reveal about lead persona (students vs. working professionals, etc.)?
+4. Peak hour behavior — what does the organic engagement timing reveal about lead persona (freelancers vs. startups vs. corporate teams, etc.)?
 5. Conversation quality — based on the sample queries, are leads asking price/feature/placement questions or just casually exploring?
 6. Two specific, actionable recommendations to improve either WhatsApp conversion or follow-up response rates next month
 
@@ -3738,7 +3740,7 @@ Be data-driven, reference the actual numbers, and avoid generic advice.`;
     const completion = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       messages: [
-        { role: "system", content: "You are a WhatsApp engagement analyst for an educational CRM. Be concise, data-driven, and specific." },
+        { role: "system", content: "You are a WhatsApp engagement analyst for BetaSpace, a co-working space CRM. Be concise, data-driven, and specific." },
         { role: "user", content: prompt }
       ],
       max_tokens: 600
@@ -3946,28 +3948,28 @@ Generate exactly TWO distinct strategy solutions (Solution A and Solution B).
 Mandatory rules:
 1. If details for a field are missing, state "No details provided".
 2. Solution A MUST be "Soft Re-Engagement Strategy".
-3. Solution B MUST be "Career Push Strategy".
+3. Solution B MUST be "Site Visit Push Strategy".
 
 Fields for each solution:
-1) probability: Admission Probability (e.g., 64%)
+1) probability: Conversion Probability (e.g., 64%)
 2) why: Brief explanation of the probability.
 3) psychology: Behaviour & Psychology Insight.
 4) marketTrend: Market Trend Injection.
-5) roi: ROI & Placement Framing.
+5) roi: ROI & Business Value Framing.
 6) whatsapp: Suggested WhatsApp Message.
 7) nextAction: Recommended Next Action.
 
 Return ONLY valid JSON:
 {
   "solutionA": { "title": "Soft Re-Engagement Strategy", "probability": "...", "why": "...", "psychology": "...", "marketTrend": "...", "roi": "...", "whatsapp": "...", "nextAction": "..." },
-  "solutionB": { "title": "Career Push Strategy", "probability": "...", "why": "...", "psychology": "...", "marketTrend": "...", "roi": "...", "whatsapp": "...", "nextAction": "..." }
+  "solutionB": { "title": "Site Visit Push Strategy", "probability": "...", "why": "...", "psychology": "...", "marketTrend": "...", "roi": "...", "whatsapp": "...", "nextAction": "..." }
 }
 `;
 
     const completion = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       messages: [
-        { role: "system", content: "You are a senior educational sales strategist." },
+        { role: "system", content: "You are a senior co-working space sales strategist." },
         { role: "user", content: prompt }
       ],
       response_format: { type: "json_object" }
@@ -4101,7 +4103,7 @@ Course Interest: ${lead.course || lead.courseofintrest || "N/A"}
 Status: ${lead.status}
 Pipeline: ${lead.pipeline}
 Source: ${lead.leadfrom || "N/A"}
-Program Type: ${lead.programType || "N/A"}
+Plan Duration: ${lead.programType || "N/A"}
 
 
 --------------------------------------------------
@@ -5551,7 +5553,7 @@ cron.schedule("0 22 * * *", async () => {
       { $sort: { username: 1 } }
       ]),
       Chat.aggregate([
-        { $match: { pipeline: "Enrolled", assignedto: { $nin: excludedUsernames } } },
+        { $match: { pipeline: { $in: CONVERTED_STAGES }, assignedto: { $nin: excludedUsernames } } },
         {
           $project: {
             firstInstDueDate: { $arrayElemAt: ["$fees.installments.dueDate", 0] },
@@ -5609,7 +5611,7 @@ cron.schedule("0 22 * * *", async () => {
       Chat.countDocuments({
         datecreated: { $gte: monthStart, $lte: monthEnd },
         assignedto: { $nin: excludedUsernames },
-        $nor: [{ pipeline: { $regex: /^enrolled$/i }, course: { $regex: /^college internship$/i } }]
+        $nor: [{ pipeline: { $regex: CONVERTED_RE }, course: { $regex: /^college internship$/i } }]
       })
     ]);
 
@@ -5678,7 +5680,7 @@ cron.schedule("0 22 * * *", async () => {
 // "Looking for job" leads are handed off to HR and are expected to sit there —
 // treat that stage as terminal too, same as Enrolled/Not Interested, so the
 // stale-pipeline cron never reclaims them back to a counsellor.
-const TERMINAL_PIPELINES = ["Enrolled", "Looking for job", /^not interested$/i, /^not intrested$/i];
+const TERMINAL_PIPELINES = [...CONVERTED_STAGES, "Looking for job", "On Hold", /^not interested$/i, /^not intrested$/i];
 
 async function getReassignmentTarget(currentAssignee) {
   const collection = mongoose.connection.db.collection('configs');
@@ -5736,8 +5738,8 @@ cron.schedule("*/10 * * * *", async () => {
     const leads = await Chat.find({
       datecreated: { $gte: windowStart },
       // Some leads enroll directly without any remark — never escalate/nag the admin for those.
-      // pipeline: { $not: { $regex: /^enrolled$/i } },
-      pipeline: {$nin: [/^pre-enrollment$/i, /^enrolled$/i]},
+      // pipeline: { $not: { $regex: CONVERTED_RE } },
+      pipeline: {$nin: [/^pre-enrollment$/i, /^advance payment$/i, /^on hold$/i, CONVERTED_RE]},
       $and: [
         { $or: [{ noRemarkEscalationCount: { $exists: false } }, { noRemarkEscalationCount: { $lt: 3 } }] },
         { $or: [{ remarks: { $exists: false } }, { remarks: { $size: 0 } }] },
@@ -5773,7 +5775,7 @@ cron.schedule("*/10 * * * *", async () => {
       datecreated: { $gte: new Date(now - 7 * 24 * 60 * 60 * 1000) },
       // Don't transfer a lead that has already enrolled, or been marked Not Interested
       // (direct enrollment/decline without remarks).
-      pipeline: { $nin: [/^enrolled$/i, /^not interested$/i, /^not intrested$/i] },
+      pipeline: { $nin: [CONVERTED_RE, /^on hold$/i, /^not interested$/i, /^not intrested$/i] },
       noRemarkEscalationCount: { $gte: 3 },
       noRemarkReassigned: { $ne: true },
       $or: [{ remarks: { $exists: false } }, { remarks: { $size: 0 } }],
@@ -5829,7 +5831,7 @@ cron.schedule("0 11 * * 1-6", async () => {
       const daysStale = Math.round((now.getTime() - new Date(lead.pipelineChangedAt).getTime()) / 86400000);
       await autoReassignLead(
         lead,
-        `Pipeline "${lead.pipeline || "New"}" unchanged ${daysStale} days with no active reminder`,
+        `Pipeline "${lead.pipeline || "New Lead"}" unchanged ${daysStale} days with no active reminder`,
         { lastStalePipelineReassignAt: now }
       );
     }
@@ -5913,7 +5915,7 @@ cron.schedule("30 23 * * 0", async () => {
         {
           $match: {
             assignedto: username,
-            pipeline: "Enrolled"
+            pipeline: { $in: CONVERTED_STAGES }
           }
         },
         {
@@ -5974,7 +5976,7 @@ cron.schedule("30 23 * * 0", async () => {
           assignedto: username,
           datecreated: { $gte: weekStart, $lte: weekEnd },
           $nor: [
-            { pipeline: { $regex: /^enrolled$/i }, course: { $regex: /^college internship$/i } }
+            { pipeline: { $regex: CONVERTED_RE }, course: { $regex: /^college internship$/i } }
           ]
         }).select("userName userNumber datecreated remarks conversations course pipeline").lean();
 
@@ -6028,7 +6030,7 @@ cron.schedule("30 23 * * 0", async () => {
         // 2. Enrolled this week (excluding college internship)
         const enrolledThisWeek = await Chat.countDocuments({
           assignedto: username,
-          pipeline: { $regex: /^enrolled$/i },
+          pipeline: { $regex: CONVERTED_RE },
           course: { $not: { $regex: /^college internship$/i } },
           datecreated: { $gte: weekStart, $lte: weekEnd }
         });
@@ -6045,7 +6047,7 @@ cron.schedule("30 23 * * 0", async () => {
 
         const activeNotEnrolled = await Chat.find({
           assignedto: username,
-          pipeline: { $not: { $regex: /^enrolled$/i } },
+          pipeline: { $not: { $regex: CONVERTED_RE } },
           lastInteracted: { $gte: thirtyDaysAgo },
           $nor: [
             { course: { $regex: /^college internship$/i } }
@@ -6062,13 +6064,13 @@ cron.schedule("30 23 * * 0", async () => {
           assignedto: username,
           respondedAfterFollowUp: true,
           lastInteracted: { $gte: weekStart, $lte: weekEnd },
-          pipeline: { $not: { $regex: /^enrolled$/i } }
+          pipeline: { $not: { $regex: CONVERTED_RE } }
         }).select("userName course status pipeline").lean();
 
         // 4c. Upcoming payments — pending installments due next week
         const upcomingPaymentLeads = await Chat.find({
           assignedto: username,
-          pipeline: "Enrolled",
+          pipeline: { $in: CONVERTED_STAGES },
           "fees.installments": {
             $elemMatch: { status: "Pending", dueDate: { $gte: nextWeekStart, $lte: nextWeekEnd } }
           }
@@ -6132,7 +6134,7 @@ cron.schedule("30 23 * * 0", async () => {
               .slice(-2)
               .map(c => `Q: ${c.userMsg} / A: ${c.botReply}`)
               .join("; ");
-            let entry = `• ${lead.userName} (${lead.course || "N/A"}, Status: ${lead.status || "Cold"}, Pipeline: ${lead.pipeline || "New"})`;
+            let entry = `• ${lead.userName} (${lead.course || "N/A"}, Status: ${lead.status || "Cold"}, Pipeline: ${lead.pipeline || "New Lead"})`;
             if (latestRemark) entry += `\n  Remark: "${latestRemark.remark}"`;
             if (recentConvs) entry += `\n  Conv: ${recentConvs}`;
             return entry;
@@ -6155,7 +6157,7 @@ cron.schedule("30 23 * * 0", async () => {
 
         let aiSummary = "AI analysis unavailable.";
         try {
-          const aiPrompt = `You are a CRM performance coach giving an honest weekly review to a sales counsellor.
+          const aiPrompt = `You are a CRM performance coach giving an honest weekly review to a sales executive.
 
 Counsellor: ${username}
 Week: ${weekStart.toLocaleDateString("en-IN")} – ${weekEnd.toLocaleDateString("en-IN")}
@@ -6437,7 +6439,7 @@ const prevMonthEnd = new Date(y, m, 0, 23, 59, 59, 999);
 
     const feesAgg = async (username, start, end) => {
       const result = await Chat.aggregate([
-        { $match: { assignedto: username, pipeline: "Enrolled" } },
+        { $match: { assignedto: username, pipeline: { $in: CONVERTED_STAGES } } },
         {
           $facet: {
             billed: [
@@ -6467,7 +6469,7 @@ const prevMonthEnd = new Date(y, m, 0, 23, 59, 59, 999);
           assignedto: username,
           datecreated: { $gte: monthStart, $lte: monthEnd },
           $nor: [
-            { pipeline: { $regex: /^enrolled$/i }, course: { $regex: /^college internship$/i } }
+            { pipeline: { $regex: CONVERTED_RE }, course: { $regex: /^college internship$/i } }
           ]
         }).select("userName userNumber datecreated remarks conversations course pipeline").lean();
 
@@ -6515,7 +6517,7 @@ const prevMonthEnd = new Date(y, m, 0, 23, 59, 59, 999);
 
         const enrolledThisMonth = await Chat.countDocuments({
           assignedto: username,
-          pipeline: { $regex: /^enrolled$/i },
+          pipeline: { $regex: CONVERTED_RE },
           course: { $not: { $regex: /^college internship$/i } },
           datecreated: { $gte: monthStart, $lte: monthEnd }
         });
@@ -6530,7 +6532,7 @@ const prevMonthEnd = new Date(y, m, 0, 23, 59, 59, 999);
 
         const activeNotEnrolled = await Chat.find({
           assignedto: username,
-          pipeline: { $not: { $regex: /^enrolled$/i } },
+          pipeline: { $not: { $regex: CONVERTED_RE } },
           lastInteracted: { $gte: thirtyDaysAgo },
           $nor: [{ course: { $regex: /^college internship$/i } }]
         }).select("userName userNumber status pipeline course remarks conversations lastInteracted").lean();
@@ -6541,7 +6543,7 @@ const prevMonthEnd = new Date(y, m, 0, 23, 59, 59, 999);
           assignedto: username,
           respondedAfterFollowUp: true,
           lastInteracted: { $gte: monthStart, $lte: monthEnd },
-          pipeline: { $not: { $regex: /^enrolled$/i } }
+          pipeline: { $not: { $regex: CONVERTED_RE } }
         }).select("userName course status pipeline").lean();
 
         const monthlyRemarksText = newLeadsThisMonth
@@ -6566,7 +6568,7 @@ const prevMonthEnd = new Date(y, m, 0, 23, 59, 59, 999);
               .slice(-2)
               .map(c => `Q: ${c.userMsg} / A: ${c.botReply}`)
               .join("; ");
-            let entry = `• ${lead.userName} (${lead.course || "N/A"}, Status: ${lead.status || "Cold"}, Pipeline: ${lead.pipeline || "New"})`;
+            let entry = `• ${lead.userName} (${lead.course || "N/A"}, Status: ${lead.status || "Cold"}, Pipeline: ${lead.pipeline || "New Lead"})`;
             if (latestRemark) entry += `\n  Remark: "${latestRemark.remark}"`;
             if (recentConvs) entry += `\n  Conv: ${recentConvs}`;
             return entry;
@@ -6588,7 +6590,7 @@ const prevMonthEnd = new Date(y, m, 0, 23, 59, 59, 999);
 
         let aiSummary = "AI analysis unavailable.";
         try {
-          const aiPrompt = `You are a CRM performance coach giving an honest monthly review to a sales counsellor.
+          const aiPrompt = `You are a CRM performance coach giving an honest monthly review to a sales executive.
 
 Counsellor: ${username}
 Month: ${monthStart.toLocaleDateString("en-IN")} – ${monthEnd.toLocaleDateString("en-IN")}
