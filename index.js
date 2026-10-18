@@ -2569,6 +2569,77 @@ app.post("/external/referral/bulk", async (req, res) => {
   }
 });
 
+// Co-working space enquiry from the website form (Contact Form 7 style field names).
+// Mapping: select-705 (space type) -> course, seats -> programType; everything else goes
+// into a single remark. Body: { userName, tel-125, email, company, branch, city-state,
+// select-705, seats, space-other, duration, start-date, description }
+app.post("/external/cowork-enquiry", async (req, res) => {
+  try {
+    const b = req.body || {};
+    const clean = (v) => (v === undefined || v === null ? "" : String(v).trim());
+
+    const userName = clean(b.userName);
+    const spaceType = clean(b["select-705"]);
+    const seats = clean(b.seats);
+    const number = cleanIndianMobileNumber(b["tel-125"]);
+
+    if (!userName) return res.status(400).json({ message: "Name is required." });
+    if (!number || number.length !== 12) {
+      return res.status(400).json({ message: "A valid 10-digit mobile number is required." });
+    }
+
+    const details = [
+      ["Branch", b.branch],
+      ["City/State", b["city-state"]],
+      ["Company", b.company],
+      ["Email", b.email],
+      ["Other space", b["space-other"]],
+      ["Duration", b.duration],
+      ["Start date", b["start-date"]],
+      ["Description", b.description],
+    ]
+      .filter(([, v]) => clean(v))
+      .map(([k, v]) => `${k}: ${clean(v)}`)
+      .join(" | ");
+    const remark = `Co-working enquiry${details ? " - " + details : ""}`;
+
+    const existing = await Chat.findOne({ userNumber: number });
+    if (existing) {
+      // Repeat enquiry: keep the lead, log the new request as a remark.
+      await Chat.updateOne({ _id: existing._id }, { $push: { remarks: { remark, timestamp: new Date() } } });
+      return res.status(200).json({ success: true, message: "Enquiry added to existing lead.", existing: true });
+    }
+
+    const lead = new Chat({
+      userNumber: number,
+      userName,
+      conversations: [],
+      course: spaceType || null,
+      programType: seats ? `${seats} Seats` : null,
+      city: clean(b["city-state"]) || null,
+      location: clean(b.branch) || null,
+      status: "Cold",
+      pipeline: "New Lead",
+      leadfrom: "Website",
+      lastInteracted: new Date(),
+      datecreated: new Date(),
+      remarks: [{ remark, timestamp: new Date() }],
+    });
+    await lead.save();
+
+    try {
+      await LeadAddNotification(number);
+    } catch (notifyErr) {
+      console.error("❌ Cowork enquiry notification failed:", notifyErr.message);
+    }
+
+    return res.status(200).json({ success: true, message: "Enquiry submitted successfully.", user: lead });
+  } catch (err) {
+    console.error("❌ Error adding cowork enquiry:", err);
+    return res.status(500).json({ message: "Internal Server Error." });
+  }
+});
+
 // ─── External Referral Groups ──────────────────────────────────────────────
 // Groups leads created via /external/referral(/bulk) by the deterministic
 // referralCode assigned to their referrer. Mirrors the /lead-groups pattern:
