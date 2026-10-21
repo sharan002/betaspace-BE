@@ -1168,6 +1168,10 @@ app.post("/cowork/bookings", auth, async (req, res) => {
     if (!String(b.clientName || "").trim()) {
       return res.status(400).json({ success: false, message: "Client name is required" });
     }
+    // The price is editable at booking time, so only reject nonsense values.
+    if (b.totalPrice !== undefined && (!Number.isFinite(Number(b.totalPrice)) || Number(b.totalPrice) < 0)) {
+      return res.status(400).json({ success: false, message: "Invalid price" });
+    }
 
     const seatIds = Array.isArray(b.seatIds) ? [...new Set(b.seatIds.map(String))] : [];
     const known = new Map((space.seats || []).map((s) => [s.id, s]));
