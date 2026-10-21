@@ -413,7 +413,7 @@ async function sendWhatsAppText(to, message) {
 }
 
 // Admin number that receives escalations for the daily manager check-in feature.
-const MANAGER_ADMIN_NUMBER = "919597271533";
+const MANAGER_ADMIN_NUMBER = "919025489889";
 
 // RAG chatbot letting MANAGER_ADMIN_NUMBER ask free-form questions about CRM
 // data (revenue, leads, pipeline changes, remarks, reports) over WhatsApp.
@@ -5735,7 +5735,7 @@ cron.schedule("0 22 * * *", async () => {
     await fetch(`${wpUrl}/internal/send-text`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ to: "919597271533", message: msg })
+      body: JSON.stringify({ to: "919025489889", message: msg })
     });
 
     console.log("✅ Daily WhatsApp report sent successfully");
@@ -6453,7 +6453,7 @@ If none show strong signals, respond: "No strong conversion signals found."`;
           await fetch(`${wpUrl}/internal/send-text`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ to: "919597271533", message: msg })
+            body: JSON.stringify({ to: "919025489889", message: msg })
           });
           console.log(`✅ Weekly report sent to ${username} (${mobile})`);
         } catch (waErr) {

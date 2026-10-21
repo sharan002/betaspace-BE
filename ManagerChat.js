@@ -100,7 +100,7 @@ const EXCLUDED_CHECKIN_NUMBERS = ["918667850844", "917397081629", "917708171533"
 
 // Set from registerManagerChatRoutes(app, managerAdminNumber); falls back to
 // the hard-coded number index.js has always used.
-let MANAGER_ADMIN_NUMBER = process.env.MANAGER_ADMIN_NUMBER || "919597271533";
+let MANAGER_ADMIN_NUMBER = process.env.MANAGER_ADMIN_NUMBER || "919025489889";
 
 // let MANAGER_ADMIN_NUMBER = process.env.MANAGER_ADMIN_NUMBER || "919360549855";
 // ─── RAG store ──────────────────────────────────────────────────────────
@@ -2128,7 +2128,7 @@ async function answerManagerQuery(from, message) {
     `You have three kinds of information below: (1) a LIVE CRM FIGURES block with today's/this month's authoritative totals — trust it over everything else for numbers; (2) freshly-pulled aggregate summaries; (3) retrieved history from the last ${RAG_MONTHS} months — individual lead timelines (remarks, WhatsApp chat, campaigns, billing), reconstructed daily reports, and weekly/monthly reports.`,
     `Answer ONLY from this information. When asked WHY something happened (a lead didn't convert, revenue dropped, a counsellor is behind), reason from the specific lead timelines and remarks — cite lead names, dates, and counsellors. If the context genuinely doesn't cover it, say so plainly instead of guessing.`,
     `For "conversions" / "enrollments" / "admissions" numbers, use the [CONVERSIONS …] block if one is present and quote its exact figures — never derive a conversion count from lead counts or from the trailing-3-month [COURSE PERFORMANCE] block. If asked about a period the blocks don't cover, say so.`,
-    `This CRM does NOT track ad-spend or cost-per-lead by source, and has no structured field for which competitor a lead went with or why (price/timing/trust) — if asked, say plainly that it isn't tracked instead of estimating a number. Any [COMPETITOR MENTIONS] or [OBJECTION THEMES] block is a best-effort read of remark text, not an exact count — say so if you use it. Any seat-capacity figure (e.g. Job Guarantee Program seats) is a configured number, not a CRM fact — say so if asked.`,
+    `This CRM does NOT track ad-spend or cost-per-lead by source, and has no structured field for which competitor a lead went with or why (price/timing/trust) — if asked, say plainly that it isn't tracked instead of estimating a number. Any [COMPETITOR MENTIONS] or [OBJECTION THEMES] block is a best-effort read of remark text, not an exact count — say so if you use it. Any seat-capacity figure (e.g. desk or cabin capacity) is a configured number, not a CRM fact — say so if asked.`,
     `Format for WhatsApp ONLY: single *asterisks* for bold, "-" for bullets, blank lines between sections. NEVER use markdown headings (#), double asterisks (**), or tables. Keep it tight — short lines, no filler.`,
   ].join(" ");
 
