@@ -2575,7 +2575,7 @@ app.post("/external/referral/bulk", async (req, res) => {
 
 // Co-working space enquiry from the website form (Contact Form 7 style field names).
 // Mapping: select-705 (space type) -> course, seats -> programType; everything else goes
-// into a single remark. Body: { userName, tel-125, email, company, branch, city-state,
+// into a single conversation entry (bot reply: "Greetings shared"). Body: { userName, tel-125, email, company, branch, city-state,
 // select-705, seats, space-other, duration, start-date, description }
 app.post("/external/cowork-enquiry", async (req, res) => {
   try {
@@ -2605,19 +2605,20 @@ app.post("/external/cowork-enquiry", async (req, res) => {
       .filter(([, v]) => clean(v))
       .map(([k, v]) => `${k}: ${clean(v)}`)
       .join(" | ");
-    const remark = `Co-working enquiry${details ? " - " + details : ""}`;
+    const enquiryMsg = `Co-working enquiry${details ? " - " + details : ""}`;
+    const buildConversation = () => ({ userMsg: enquiryMsg, botReply: "Greetings shared", timestamp: new Date() });
 
     const existing = await Chat.findOne({ userNumber: number });
     if (existing) {
-      // Repeat enquiry: keep the lead, log the new request as a remark.
-      await Chat.updateOne({ _id: existing._id }, { $push: { remarks: { remark, timestamp: new Date() } } });
+      // Repeat enquiry: keep the lead, log the new request in the conversation.
+      await Chat.updateOne({ _id: existing._id }, { $push: { conversations: buildConversation() } });
       return res.status(200).json({ success: true, message: "Enquiry added to existing lead.", existing: true });
     }
 
     const lead = new Chat({
       userNumber: number,
       userName,
-      conversations: [],
+      conversations: [buildConversation()],
       course: spaceType || null,
       programType: seats ? `${seats} Seats` : null,
       city: clean(b["city-state"]) || null,
@@ -2627,7 +2628,6 @@ app.post("/external/cowork-enquiry", async (req, res) => {
       leadfrom: "Website",
       lastInteracted: new Date(),
       datecreated: new Date(),
-      remarks: [{ remark, timestamp: new Date() }],
     });
     await lead.save();
 
