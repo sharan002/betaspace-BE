@@ -171,6 +171,17 @@ io.on('connection', (socket) => {
 });
 // ────────────────────────────────────────────────────────────────────────────
 
+// ─── Process-level safety net ───────────────────────────────────────────────
+// Express 4 does not catch rejections from async handlers, and on Node 15+ an
+// unhandled rejection terminates the process (PM2 then restarts it and every
+// connected client/socket is dropped). Log and keep serving instead.
+process.on('unhandledRejection', (reason) => {
+  console.error('❌ Unhandled promise rejection:', reason);
+});
+process.on('uncaughtException', (err) => {
+  console.error('❌ Uncaught exception:', err);
+});
+
 const PORT = process.env.PORT || 8002;
 mongoose.set('strictQuery', false);
 mongoose.connect(process.env.MONGO_URI, {
@@ -619,13 +630,18 @@ app.post("/login", async (req, res) => {
 
 
 app.post("/dashboard", auth, async (req, res) => {
-    
+  try {
     const { username, includeLeads = true } = req.body;
 
     // 1️⃣ Validate user
     const user = await User.findOne({ username });
 
-  
+    // A token can outlive its user (deleted/renamed account) — without this
+    // check `user.role` below threw an unhandled rejection that crashed the process.
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
   let leads = [];
 
     // 3️⃣ Fetch leads based on role
@@ -705,7 +721,12 @@ app.post("/dashboard", auth, async (req, res) => {
         message: "Invalid role"
       });
     }
-
+  } catch (err) {
+    console.error("Dashboard error:", err);
+    if (!res.headersSent) {
+      return res.status(500).json({ success: false, message: "Server error" });
+    }
+  }
 });
 
 function escapeRegex(text) {
@@ -7091,6 +7112,14 @@ const requireCtwaAdmin = (req, res, next) => {
   next();
 };
 require('./ctwaAds').registerCtwaRoutes(app, auth, requireCtwaAdmin, { Chat });
+
+// Last-resort Express error handler: keeps the status of errors raised by
+// middleware (e.g. malformed JSON body → 400) and never lets one bubble up.
+app.use((err, req, res, next) => {
+  console.error(`Unhandled route error ${req.method} ${req.originalUrl}:`, err.message);
+  if (res.headersSent) return next(err);
+  res.status(err.status || err.statusCode || 500).json({ success: false, message: err.status && err.status < 500 ? err.message : "Server error" });
+});
 
 server.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);

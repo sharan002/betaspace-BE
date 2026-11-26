@@ -383,6 +383,12 @@ function registerHrPortalRoutes(app, auth) {
       const obj = await s3GetStream(emp.photo.key);
       if (obj.ContentType) res.setHeader("Content-Type", obj.ContentType);
       res.setHeader("Cache-Control", "private, max-age=300");
+      // A stream error after piping has started (e.g. S3 connection drop) would otherwise
+      // be an unhandled 'error' event and take the whole process down.
+      obj.Body.on("error", (e) => {
+        console.error("[HrPortal] stream error:", e);
+        res.destroy(e);
+      });
       obj.Body.pipe(res);
     } catch (err) {
       console.error("[HrPortal] photo stream error:", err);
@@ -434,6 +440,12 @@ function registerHrPortalRoutes(app, auth) {
       res.setHeader("Content-Type", doc.contentType || obj.ContentType || "application/octet-stream");
       const disposition = req.query.inline === "1" ? "inline" : "attachment";
       res.setHeader("Content-Disposition", `${disposition}; filename="${doc.fileName || "document"}"`);
+      // A stream error after piping has started (e.g. S3 connection drop) would otherwise
+      // be an unhandled 'error' event and take the whole process down.
+      obj.Body.on("error", (e) => {
+        console.error("[HrPortal] stream error:", e);
+        res.destroy(e);
+      });
       obj.Body.pipe(res);
     } catch (err) {
       console.error("[HrPortal] document download error:", err);
