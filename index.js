@@ -30,11 +30,6 @@ app.use(bodyParser.json());
 const { Configuration, OpenAIApi } = require("openai");
 const OpenAI = require("openai");
 const path = require('path');
-const { BetaAnalyticsDataClient } = require('@google-analytics/data');
-
-const analyticsClient = new BetaAnalyticsDataClient({
-  keyFilename: path.join(__dirname, 'gen-lang-client-0473171780-0991219131a2.json')
-});
 
 const dns  = require("dns");
 
@@ -139,6 +134,7 @@ const io = new SocketIOServer(server, {
     credentials: true,
   },
 });
+app.set('io', io);
 
 // Authenticate socket connections using the same JWT
 io.use((socket, next) => {
@@ -6810,242 +6806,291 @@ If none show strong signals, respond: "No strong conversion signals found."`;
   timezone: "Asia/Kolkata"
 });
 
-// ─── Google Analytics 4 – Acquisition Overview ──────────────────────────────
-app.get('/analytics/acquisition', async (req, res) => {
+// ─── WhatsApp Billing & Template Usage (read-only, Meta Graph API) ──────────
+const WA_META_GRAPH_VERSION = process.env.META_GRAPH_VERSION || 'v24.0';
+
+const requireWaAdmin = (req, res, next) => {
+  if (req.user?.role !== 'admin') {
+    return res.status(403).json({ success: false, message: 'Admin access required' });
+  }
+  next();
+};
+
+const waMetaGraphGet = async (path) => {
+  const wabaId = (process.env.WABA_ID || '').trim();
+  const token = (process.env.WHATSAPP_TOKEN || '').trim();
+  if (!wabaId || !token) {
+    const e = new Error('WABA_ID / WHATSAPP_TOKEN not configured in .env');
+    e.status = 500;
+    throw e;
+  }
+  const url = path.startsWith('http')
+    ? path
+    : `https://graph.facebook.com/${WA_META_GRAPH_VERSION}/${path}`;
+  const r = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+  const body = await r.json().catch(() => ({}));
+  if (!r.ok) {
+    const e = new Error(body?.error?.message || `Meta API error (${r.status})`);
+    e.status = 502;
+    throw e;
+  }
+  return body;
+};
+
+const waDayStartTs = (dateStr) => Math.floor(new Date(`${dateStr}T00:00:00Z`).getTime() / 1000);
+const waIsDateStr = (s) => /^\d{4}-\d{2}-\d{2}$/.test(s || '');
+
+const waDateRange = (req) => {
+  const today = new Date().toISOString().split('T')[0];
+  const monthAgo = new Date(Date.now() - 29 * 86400000).toISOString().split('T')[0];
+  const startDate = waIsDateStr(req.query.startDate) ? req.query.startDate : monthAgo;
+  const endDate = waIsDateStr(req.query.endDate) ? req.query.endDate : today;
+  const start = waDayStartTs(startDate);
+  const end = Math.min(waDayStartTs(endDate) + 86400, Math.floor(Date.now() / 1000));
+  return { startDate, endDate, start, end };
+};
+
+const waRound2 = (n) => Math.round((n || 0) * 100) / 100;
+
+app.get('/whatsapp/billing/summary', auth, requireWaAdmin, async (req, res) => {
   try {
-    const propertyId = (process.env.property_id || '').trim();
-    if (!propertyId) {
-      return res.status(500).json({ success: false, message: 'GA4 property_id not configured in .env' });
+    const { startDate, endDate, start, end } = waDateRange(req);
+    if (end <= start) {
+      return res.status(400).json({ success: false, message: 'Invalid date range' });
+    }
+    const wabaId = (process.env.WABA_ID || '').trim();
+    const phoneNumberId = (req.query.phoneNumberId || req.query.phone || '').trim();
+
+    let phoneNumbers = [];
+    try {
+      const phoneRes = await waMetaGraphGet(`${wabaId}/phone_numbers?fields=id,display_phone_number,verified_name`);
+      phoneNumbers = phoneRes.data || [];
+    } catch (e) {
+      console.warn('Billing phone numbers fetch warning:', e.message);
     }
 
-    const startDate = req.query.startDate || '28daysAgo';
-    const endDate   = req.query.endDate   || 'today';
+    const cleanDigits = (s) => String(s || '').replace(/\D/g, '');
+    const reqDigits = cleanDigits(phoneNumberId);
 
-    const [report] = await analyticsClient.runReport({
-      property: `properties/${propertyId}`,
-      dateRanges: [{ startDate, endDate }],
-      dimensions: [{ name: 'sessionDefaultChannelGrouping' }],
-      metrics: [
-        { name: 'sessions' },
-        { name: 'newUsers' },
-        { name: 'totalUsers' },
-        { name: 'engagementRate' },
-        { name: 'averageSessionDuration' },
-        { name: 'bounceRate' },
-      ],
-      orderBys: [{ metric: { metricName: 'sessions' }, desc: true }],
-    });
-
-    const rows = (report.rows || []).map(row => ({
-      channel:            row.dimensionValues[0].value,
-      sessions:           parseInt(row.metricValues[0].value)  || 0,
-      newUsers:           parseInt(row.metricValues[1].value)  || 0,
-      totalUsers:         parseInt(row.metricValues[2].value)  || 0,
-      engagementRate:     parseFloat((parseFloat(row.metricValues[3].value) * 100).toFixed(1)) || 0,
-      avgSessionDuration: Math.round(parseFloat(row.metricValues[4].value)) || 0,
-      bounceRate:         parseFloat((parseFloat(row.metricValues[5].value) * 100).toFixed(1)) || 0,
-    }));
-
-    const totals = rows.reduce(
-      (acc, r) => ({
-        sessions:   acc.sessions   + r.sessions,
-        newUsers:   acc.newUsers   + r.newUsers,
-        totalUsers: acc.totalUsers + r.totalUsers,
-      }),
-      { sessions: 0, newUsers: 0, totalUsers: 0 }
+    const selectedPhoneObj = phoneNumbers.find(
+      p => p.id === phoneNumberId ||
+           (reqDigits && cleanDigits(p.display_phone_number) === reqDigits) ||
+           p.display_phone_number === phoneNumberId
     );
 
-    return res.json({ success: true, dateRange: { startDate, endDate }, rows, totals });
-  } catch (err) {
-    console.error('GA4 acquisition error:', err.message);
-    return res.status(500).json({ success: false, message: 'Failed to fetch GA4 data', error: err.message });
-  }
-});
-// ─────────────────────────────────────────────────────────────────────────────
+    const phoneDigits = selectedPhoneObj ? cleanDigits(selectedPhoneObj.display_phone_number) : reqDigits;
+    const phoneId = selectedPhoneObj?.id || phoneNumberId;
 
-// ─── Google Analytics 4 – Session Manual Source ─────────────────────────────
-app.get('/analytics/session-source', async (req, res) => {
-  try {
-    const propertyId = (process.env.property_id || '').trim();
-    if (!propertyId) {
-      return res.status(500).json({ success: false, message: 'GA4 property_id not configured in .env' });
+    let data;
+    if (phoneDigits && phoneNumberId !== 'all') {
+      try {
+        data = await waMetaGraphGet(
+          `${wabaId}?fields=name,currency,pricing_analytics.start(${start}).end(${end})` +
+          `.phone_numbers(['${phoneDigits}']).granularity(DAILY).dimensions(PHONE,PRICING_CATEGORY,PRICING_TYPE)`
+        );
+      } catch (err1) {
+        try {
+          data = await waMetaGraphGet(
+            `${wabaId}?fields=name,currency,pricing_analytics.start(${start}).end(${end})` +
+            `.phone_numbers(['${phoneDigits}']).granularity(DAILY).dimensions(PRICING_CATEGORY,PRICING_TYPE)`
+          );
+        } catch (err2) {
+          try {
+            data = await waMetaGraphGet(
+              `${wabaId}?fields=name,currency,pricing_analytics.start(${start}).end(${end})` +
+              `.granularity(DAILY).dimensions(PHONE,PRICING_CATEGORY,PRICING_TYPE)`
+            );
+          } catch (err3) {
+            console.warn('Phone-filtered pricing query fallback to overall:', err3.message);
+            data = await waMetaGraphGet(
+              `${wabaId}?fields=name,currency,pricing_analytics.start(${start}).end(${end})` +
+              `.granularity(DAILY).dimensions(PRICING_CATEGORY,PRICING_TYPE)`
+            );
+          }
+        }
+      }
+    } else {
+      data = await waMetaGraphGet(
+        `${wabaId}?fields=name,currency,pricing_analytics.start(${start}).end(${end})` +
+        `.granularity(DAILY).dimensions(PRICING_CATEGORY,PRICING_TYPE)`
+      );
     }
 
-    const startDate = req.query.startDate || '28daysAgo';
-    const endDate   = req.query.endDate   || 'today';
+    let points = (data.pricing_analytics?.data || []).flatMap(d => d.data_points || []);
 
-    const [report] = await analyticsClient.runReport({
-      property: `properties/${propertyId}`,
-      dateRanges: [{ startDate, endDate }],
-      dimensions: [{ name: 'sessionManualSource' }],
-      metrics: [
-        { name: 'sessions' },
-        { name: 'newUsers' },
-        { name: 'totalUsers' },
-        { name: 'engagementRate' },
-        { name: 'averageSessionDuration' },
-        { name: 'bounceRate' },
-      ],
-      orderBys: [{ metric: { metricName: 'sessions' }, desc: true }],
-    });
-
-    const rows = (report.rows || []).map(row => ({
-      source:             row.dimensionValues[0].value,
-      sessions:           parseInt(row.metricValues[0].value)  || 0,
-      newUsers:           parseInt(row.metricValues[1].value)  || 0,
-      totalUsers:         parseInt(row.metricValues[2].value)  || 0,
-      engagementRate:     parseFloat((parseFloat(row.metricValues[3].value) * 100).toFixed(1)) || 0,
-      avgSessionDuration: Math.round(parseFloat(row.metricValues[4].value)) || 0,
-      bounceRate:         parseFloat((parseFloat(row.metricValues[5].value) * 100).toFixed(1)) || 0,
-    }));
-
-    const totals = rows.reduce(
-      (acc, r) => ({
-        sessions:   acc.sessions   + r.sessions,
-        newUsers:   acc.newUsers   + r.newUsers,
-        totalUsers: acc.totalUsers + r.totalUsers,
-      }),
-      { sessions: 0, newUsers: 0, totalUsers: 0 }
-    );
-
-    return res.json({ success: true, dateRange: { startDate, endDate }, rows, totals });
-  } catch (err) {
-    console.error('GA4 session source error:', err.message);
-    return res.status(500).json({ success: false, message: 'Failed to fetch GA4 data', error: err.message });
-  }
-});
-// ─────────────────────────────────────────────────────────────────────────────
-
-// ─── Google Analytics 4 – Google Organic Search: Landing Page + Query String ─
-app.get('/analytics/organic-landing-pages', async (req, res) => {
-  try {
-    const propertyId = (process.env.property_id || '').trim();
-    if (!propertyId) {
-      return res.status(500).json({ success: false, message: 'GA4 property_id not configured in .env' });
+    if (phoneDigits && phoneNumberId !== 'all') {
+      const hasPhoneDimension = points.some(p => p.phone || p.phone_number || p.phone_id || p.phone_number_id);
+      if (hasPhoneDimension) {
+        points = points.filter(p => {
+          const pDigits = cleanDigits(p.phone || p.phone_number || p.display_phone_number);
+          const pId = String(p.phone_number_id || p.phone_id || p.phone || '');
+          return (
+            (pDigits && (pDigits === phoneDigits || pDigits.endsWith(phoneDigits) || phoneDigits.endsWith(pDigits))) ||
+            (phoneId && pId === phoneId)
+          );
+        });
+      }
     }
 
-    const startDate = req.query.startDate || '28daysAgo';
-    const endDate   = req.query.endDate   || 'today';
+    const byCategoryMap = {};
+    const dailyMap = {};
+    let totalCost = 0, totalVolume = 0, billableVolume = 0;
 
-    const [report] = await analyticsClient.runReport({
-      property: `properties/${propertyId}`,
-      dateRanges: [{ startDate, endDate }],
-      dimensions: [{ name: 'landingPagePlusQueryString' }],
-      metrics: [
-        { name: 'sessions' },
-        { name: 'screenPageViews' },
-        { name: 'bounceRate' },
-        { name: 'eventsPerSession' },
-        { name: 'engagedSessions' },
-        { name: 'conversions' },
-      ],
-      dimensionFilter: {
-        andGroup: {
-          expressions: [
-            { filter: { fieldName: 'sessionSource', stringFilter: { matchType: 'EXACT', value: 'google' } } },
-            { filter: { fieldName: 'sessionMedium', stringFilter: { matchType: 'EXACT', value: 'organic' } } },
-          ],
-        },
+    for (const p of points) {
+      const cost = Number(p.cost) || 0;
+      const volume = Number(p.volume) || 0;
+      const category = p.pricing_category || 'UNKNOWN';
+      const pricingType = p.pricing_type || 'UNKNOWN';
+      const date = new Date(p.start * 1000).toISOString().split('T')[0];
+
+      totalCost += cost;
+      totalVolume += volume;
+      if (pricingType === 'REGULAR') billableVolume += volume;
+
+      const key = `${category}|${pricingType}`;
+      byCategoryMap[key] = byCategoryMap[key] || { category, pricingType, volume: 0, cost: 0 };
+      byCategoryMap[key].volume += volume;
+      byCategoryMap[key].cost += cost;
+
+      dailyMap[date] = dailyMap[date] || { date, volume: 0, cost: 0 };
+      dailyMap[date].volume += volume;
+      dailyMap[date].cost += cost;
+    }
+
+    const byCategory = Object.values(byCategoryMap)
+      .map(r => ({ ...r, cost: waRound2(r.cost) }))
+      .sort((a, b) => b.cost - a.cost);
+    const daily = Object.values(dailyMap)
+      .map(r => ({ ...r, cost: waRound2(r.cost) }))
+      .sort((a, b) => a.date.localeCompare(b.date));
+
+    return res.json({
+      success: true,
+      dateRange: { startDate, endDate },
+      account: {
+        name: data.name || '',
+        currency: data.currency || 'INR',
+        selectedPhone: selectedPhoneObj?.display_phone_number || (phoneNumberId !== 'all' ? phoneNumberId : null),
       },
-      orderBys: [{ metric: { metricName: 'sessions' }, desc: true }],
+      phoneNumbers,
+      totals: {
+        cost: waRound2(totalCost),
+        volume: totalVolume,
+        billableVolume,
+        avgCostPerBillable: billableVolume ? waRound2(totalCost / billableVolume) : 0,
+      },
+      byCategory,
+      daily,
     });
-
-    const rows = (report.rows || []).map(row => ({
-      landingPage:    row.dimensionValues[0].value,
-      sessions:       parseInt(row.metricValues[0].value) || 0,
-      views:          parseInt(row.metricValues[1].value) || 0,
-      bounceRate:     parseFloat((parseFloat(row.metricValues[2].value) * 100).toFixed(2)) || 0,
-      eventsPerSession: parseFloat(parseFloat(row.metricValues[3].value).toFixed(2)) || 0,
-      engagedSessions: parseInt(row.metricValues[4].value) || 0,
-      conversions:    parseInt(row.metricValues[5].value) || 0,
-    }));
-
-    const totals = rows.reduce(
-      (acc, r) => ({
-        sessions:        acc.sessions        + r.sessions,
-        views:           acc.views           + r.views,
-        engagedSessions: acc.engagedSessions + r.engagedSessions,
-        conversions:     acc.conversions     + r.conversions,
-      }),
-      { sessions: 0, views: 0, engagedSessions: 0, conversions: 0 }
-    );
-
-    return res.json({ success: true, dateRange: { startDate, endDate }, rows, totals });
   } catch (err) {
-    console.error('GA4 organic landing pages error:', err.message);
-    return res.status(500).json({ success: false, message: 'Failed to fetch GA4 data', error: err.message });
+    console.error('WhatsApp billing summary error:', err.message);
+    return res.status(err.status || 500).json({ success: false, message: err.message });
   }
 });
-// ─────────────────────────────────────────────────────────────────────────────
 
-// ─── Google Analytics 4 – Engagement Overview ───────────────────────────────
-app.get('/analytics/engagement-overview', async (req, res) => {
+const handleWhatsAppBillingTemplates = async (req, res) => {
   try {
-    const propertyId = (process.env.property_id || '').trim();
-    if (!propertyId) {
-      return res.status(500).json({ success: false, message: 'GA4 property_id not configured in .env' });
+    const { startDate, endDate, start, end } = waDateRange(req);
+    if (end <= start) {
+      return res.status(400).json({ success: false, message: 'Invalid date range' });
+    }
+    const wabaId = (process.env.WABA_ID || '').trim();
+
+    const templates = [];
+    let next = `${wabaId}/message_templates?fields=id,name,language,category,status&limit=100`;
+    for (let page = 0; next && page < 10; page++) {
+      const body = await waMetaGraphGet(next);
+      templates.push(...(body.data || []));
+      next = body.paging?.next || null;
     }
 
-    const startDate = req.query.startDate || '28daysAgo';
-    const endDate   = req.query.endDate   || 'today';
+    const usage = {};
+    let analyticsError = '';
+    const minStart = Math.floor(Date.now() / 1000) - 89 * 86400;
+    const aStart = Math.max(start, minStart);
+    const ids = templates.map(t => t.id);
+    const chunks = [];
+    for (let i = 0; i < ids.length; i += 10) chunks.push(ids.slice(i, i + 10));
 
-    const [report] = await analyticsClient.runReport({
-      property: `properties/${propertyId}`,
-      dateRanges: [{ startDate, endDate }],
-      dimensions: [{ name: 'date' }],
-      metrics: [
-        { name: 'activeUsers' },
-        { name: 'userEngagementDuration' },
-        { name: 'engagedSessions' },
-        { name: 'sessions' },
-      ],
-      orderBys: [{ dimension: { dimensionName: 'date' } }],
-    });
+    try {
+      const results = await Promise.all(chunks.map(chunk =>
+        waMetaGraphGet(
+          `${wabaId}/template_analytics?start=${aStart}&end=${end}&granularity=daily` +
+          `&metric_types=cost,delivered,read,sent&template_ids=[${chunk.join(',')}]`
+        )
+      ));
+      for (const body of results) {
+        for (const d of body.data || []) {
+          for (const p of d.data_points || []) {
+            const u = usage[p.template_id] = usage[p.template_id] || { sent: 0, delivered: 0, read: 0, cost: 0 };
+            u.sent += Number(p.sent) || 0;
+            u.delivered += Number(p.delivered) || 0;
+            u.read += Number(p.read) || 0;
+            for (const c of p.cost || []) {
+              if (c.type === 'amount_spent') u.cost += Number(c.value) || 0;
+            }
+          }
+        }
+      }
+    } catch (e) {
+      analyticsError = e.message;
+    }
 
-    const parsedRows = (report.rows || []).map(row => {
-      const activeUsers            = parseInt(row.metricValues[0].value) || 0;
-      const userEngagementDuration = parseFloat(row.metricValues[1].value) || 0;
-      const engagedSessions        = parseInt(row.metricValues[2].value) || 0;
-      const sessions               = parseInt(row.metricValues[3].value) || 0;
-      const dim = row.dimensionValues[0].value; // YYYYMMDD
-
+    const rows = templates.map(t => {
+      const u = usage[t.id] || { sent: 0, delivered: 0, read: 0, cost: 0 };
       return {
-        date: `${dim.slice(0, 4)}-${dim.slice(4, 6)}-${dim.slice(6, 8)}`,
-        activeUsers,
-        userEngagementDuration,
-        engagedSessions,
-        sessions,
+        id: t.id,
+        name: t.name,
+        language: t.language,
+        category: t.category,
+        status: t.status,
+        sent: u.sent,
+        delivered: u.delivered,
+        read: u.read,
+        cost: waRound2(u.cost),
       };
+    }).sort((a, b) => (b.cost - a.cost) || (b.sent - a.sent) || a.name.localeCompare(b.name));
+
+    return res.json({
+      success: true,
+      dateRange: { startDate, endDate },
+      analyticsError,
+      rows,
     });
-
-    const rows = parsedRows.map(r => ({
-      date:                            r.date,
-      activeUsers:                     r.activeUsers,
-      engagedSessions:                 r.engagedSessions,
-      sessions:                        r.sessions,
-      avgEngagementTimePerActiveUser:  r.activeUsers ? Math.round(r.userEngagementDuration / r.activeUsers) : 0,
-      engagedSessionsPerActiveUser:    r.activeUsers ? parseFloat((r.engagedSessions / r.activeUsers).toFixed(2)) : 0,
-      avgEngagementTimePerSession:     r.sessions ? Math.round(r.userEngagementDuration / r.sessions) : 0,
-    }));
-
-    const totalActiveUsers        = parsedRows.reduce((sum, r) => sum + r.activeUsers, 0);
-    const totalEngagedSessions    = parsedRows.reduce((sum, r) => sum + r.engagedSessions, 0);
-    const totalSessions           = parsedRows.reduce((sum, r) => sum + r.sessions, 0);
-    const totalEngagementDuration = parsedRows.reduce((sum, r) => sum + r.userEngagementDuration, 0);
-
-    const summary = {
-      avgEngagementTimePerActiveUser: totalActiveUsers ? Math.round(totalEngagementDuration / totalActiveUsers) : 0,
-      engagedSessionsPerActiveUser:   totalActiveUsers ? parseFloat((totalEngagedSessions / totalActiveUsers).toFixed(2)) : 0,
-      avgEngagementTimePerSession:    totalSessions ? Math.round(totalEngagementDuration / totalSessions) : 0,
-    };
-
-    return res.json({ success: true, dateRange: { startDate, endDate }, summary, rows });
   } catch (err) {
-    console.error('GA4 engagement overview error:', err.message);
-    return res.status(500).json({ success: false, message: 'Failed to fetch GA4 data', error: err.message });
+    console.error('WhatsApp billing templates error:', err.message);
+    return res.status(err.status || 500).json({ success: false, message: err.message });
+  }
+};
+
+app.get('/whatsapp/billing/templates', auth, requireWaAdmin, handleWhatsAppBillingTemplates);
+app.get('/whatsapp/billing/template-usage', auth, requireWaAdmin, handleWhatsAppBillingTemplates);
+
+// ─── WhatsApp Manager Routes & Cron ─────────────────────────────────────────
+app.use('/whatsapp/templates', auth, require('./routes/whatsappTemplates'));
+app.use('/whatsapp', auth, require('./routes/whatsappAccount'));
+app.use('/internal/whatsapp/events', require('./routes/whatsappEvents'));
+
+cron.schedule('*/30 * * * *', async () => {
+  if (!process.env.WABA_ID || !process.env.WHATSAPP_TOKEN) return;
+  try {
+    const { syncTemplatesFromMeta } = require('./connectors/whatsapp/sync');
+    const result = await syncTemplatesFromMeta('default');
+    console.log(`🔄 WhatsApp templates sync: ${result.added} added, ${result.updated} updated, ${result.deleted || 0} removed (${result.totalMeta} in Meta)`);
+  } catch (err) {
+    console.error('⚠️ WhatsApp templates sync error:', err.message);
   }
 });
 // ─────────────────────────────────────────────────────────────────────────────
+
+// ─── Click-to-WhatsApp Ads Manager (ctwaAds.js) ────────────────────────────
+const requireCtwaAdmin = (req, res, next) => {
+  if (req.user?.role !== 'admin') {
+    return res.status(403).json({ success: false, message: 'Admin access required' });
+  }
+  next();
+};
+require('./ctwaAds').registerCtwaRoutes(app, auth, requireCtwaAdmin, { Chat });
 
 server.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
